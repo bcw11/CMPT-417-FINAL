@@ -1,7 +1,7 @@
 import heapq
 
 def move(loc, dir):
-    directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    directions = [(0, -1), (1, 0), (0, 1), (-1, 0), (0,0)]
     return loc[0] + directions[dir][0], loc[1] + directions[dir][1]
 
 
@@ -134,13 +134,14 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
         if curr['loc'] == goal_loc:
-            for const in constraint_table:
-                print(const['loc'],curr['loc'],curr['timestep'],const['timestep'])
-                # if(const['loc'] == curr['loc'] and curr['timestep'] < const['timestep']):
-                #     push_node(open_list,curr)
-                #     continue
-            return get_path(curr)
-        for dir in range(4):
+            # build a function for 1.4 (also still need to write in report)
+            max_time = 0
+            for timestep in constraint_table:
+                if(len(constraint_table[timestep]) == 1 and constraint_table[timestep][0] == curr['loc'] and timestep > max_time):
+                    max_time = timestep
+            if(curr['timestep'] > max_time):
+                return get_path(curr)
+        for dir in range(5):
             child_loc = move(curr['loc'], dir)
             if my_map[child_loc[0]][child_loc[1]]:
                 continue
@@ -154,13 +155,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                 if compare_nodes(child, existing_node):
                     closed_list[(child['loc'],child['timestep'])] = child
                     push_node(open_list, child)
-            # 1.1 agent waiting in current cell
-            elif (child['loc'] == curr['loc']):
-                push_node(open_list,child)
             # 1.2 checking for vertex constraints
             elif is_constrained(curr['loc'],child['loc'],child['timestep'],constraint_table):
-                child['loc'] = curr['loc']
-                push_node(open_list,child)
+                continue
             else:
                 closed_list[(child['loc'],child['timestep'])] = child
                 push_node(open_list, child)
