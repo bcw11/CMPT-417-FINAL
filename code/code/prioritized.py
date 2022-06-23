@@ -29,19 +29,17 @@ class PrioritizedPlanningSolver(object):
         start_time = timer.time()
         result = []
         constraints = [
-                        {'agent':1,'loc':[(1,4)],'timestep': 2},
-                        {'agent':1,'loc':[(1,2)],'timestep': 2},
-                        {'agent':1,'loc':[(1,3)],'timestep': 2}
-                        ]
-        # [{'agent':1,'loc':[(1,4)],'timestep': 2},
-        #                {'agent':1,'loc':[(1,3)],'timestep': 2}]
+                        # {'agent':1,'loc':[(1,4)],'timestep': 3},
+                        # {'agent':1,'loc':[(1,3),(1,4)],'timestep': 3},
+                        # {'agent':1,'loc':[(1,3)],'timestep': 2}
+                    ]
 
         for i in range(self.num_of_agents):  # Find path for each agent
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
                           i, constraints)
             if path is None:
                 raise BaseException('No solutions')
-            result.append(path)
+            # result.append(path)
 
             ##############################
             # Task 2: Add constraints here
@@ -49,8 +47,28 @@ class PrioritizedPlanningSolver(object):
             #            * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
             #            * self.num_of_agents has the number of total agents
             #            * constraints: array of constraints to consider for future A* searches
+            
+            for agent in range(self.num_of_agents):
+                for j in range(len(path)):
+                    if(agent != i):
+                        vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':j}
+                        constraints.append(vert_constraint)
 
-
+                        if(j > 0):
+                            edge_constraint = {'agent':agent,'loc':[path[j-1],path[j]],'timestep':j}
+                            constraints.append(edge_constraint)
+                            edge_constraint = {'agent':agent,'loc':[path[j],path[j-1]],'timestep':j}
+                            constraints.append(edge_constraint)
+        
+        for i in range(self.num_of_agents):
+            # for c in constraints:
+            #     print(c)
+            path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
+                            i, constraints)
+            if path is None:
+                raise BaseException('No solutions')
+            result.append(path)
+           
             ##############################
 
         self.CPU_time = timer.time() - start_time
