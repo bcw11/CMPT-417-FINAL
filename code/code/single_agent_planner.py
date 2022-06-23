@@ -95,6 +95,11 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
                     return True 
             else:
                 print("Error(is_constrained): Too many arguments in table")
+    # 2.3 checking for additional constraints (agents that have reached goal node)
+    if(-1 in constraint_table):
+        for constraint in constraint_table[-1]:
+            if next_loc == constraint[0]:
+                return True
     return False        
 
 
@@ -135,8 +140,15 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     #           rather than space domain, only.
     open_list = []
     closed_list = dict()
+
+    # 1.2 building a constraint table
     constraint_table = build_constraint_table(constraints,agent)
+    # 1.4 finding earlist goal time step for goal constraints
     earliest_goal_timestep = find_earlist_goal_timestep(goal_loc,constraint_table)
+    # 2.4 finding upper bound on path length/timestep
+    size_of_map =  sum([i.count(False) for i in my_map])
+    largest_timestep = size_of_map + len(constraint_table)
+
     h_value = h_values[start_loc]
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'timestep': 0}
     push_node(open_list, root)
@@ -147,6 +159,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         # Task 1.4: Adjust the goal test condition to handle goal constraints
         if curr['loc'] == goal_loc and curr['timestep'] > earliest_goal_timestep:
                 return get_path(curr)
+        elif curr['timestep'] > largest_timestep:
+            return None
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
             if my_map[child_loc[0]][child_loc[1]]:

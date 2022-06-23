@@ -51,24 +51,23 @@ class PrioritizedPlanningSolver(object):
             for agent in range(self.num_of_agents):
                 for j in range(len(path)):
                     if(agent != i):
+                        # 2.1 creating vertex constraints
                         vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':j}
                         constraints.append(vert_constraint)
-
+                        # 2.3 creating additional constraints for agents at goal locations
+                        if(j == len(path)-1):
+                            vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':-1}
+                            constraints.append(vert_constraint)
+                        # 2.2 creating edge constraints 
                         if(j > 0):
-                            edge_constraint = {'agent':agent,'loc':[path[j-1],path[j]],'timestep':j}
-                            constraints.append(edge_constraint)
                             edge_constraint = {'agent':agent,'loc':[path[j],path[j-1]],'timestep':j}
                             constraints.append(edge_constraint)
-        
-        for i in range(self.num_of_agents):
-            # for c in constraints:
-            #     print(c)
+            # recalculating paths based on generated constraints 
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
                             i, constraints)
             if path is None:
                 raise BaseException('No solutions')
             result.append(path)
-           
             ##############################
 
         self.CPU_time = timer.time() - start_time
