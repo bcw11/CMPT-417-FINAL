@@ -56,7 +56,7 @@ def build_constraint_table(constraints, agent):
     constraint_table = {}
     for constraint in constraints:
         if(constraint['agent'] == agent):
-            constraint_table[constraint['timestep']] = constraint['loc']
+            constraint_table.setdefault(constraint['timestep'],[]).append(constraint['loc'])
     return constraint_table
 
 
@@ -85,13 +85,16 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     #               any given constraint. For efficiency the constraints are indexed in a constraint_table
     #               by time step, see build_constraint_table.
     if(next_time in constraint_table):
-        table_len = len(constraint_table[next_time])
-        if(table_len == 1):
-            return constraint_table[next_time][0] == next_loc
-        elif(table_len == 2):
-            return constraint_table[next_time][0] == curr_loc and constraint_table[next_time][1] == next_loc 
-        else:
-            print("Error(is_constrained): Too many arguments in table")
+        for constraint in constraint_table[next_time]:
+            table_len = len(constraint)
+            if(table_len == 1):
+                if(constraint[0] == next_loc):
+                    return True
+            elif(table_len == 2):
+                if(constraint[0] == curr_loc and constraint[1] == next_loc):
+                    return True 
+            else:
+                print("Error(is_constrained): Too many arguments in table")
     return False        
 
 
@@ -109,6 +112,16 @@ def compare_nodes(n1, n2):
     return n1['g_val'] + n1['h_val'] < n2['g_val'] + n2['h_val']
 
 
+# 1.4 finds the earlist goal time step
+def find_earlist_goal_timestep(goal_loc,constraint_table):
+    earliest_goal_timestep = 0
+    for timestep in constraint_table:
+        for constraint in constraint_table[timestep]:
+            table_len = len(constraint) 
+            if(table_len == 1 and constraint[0] == goal_loc and timestep > earliest_goal_timestep):
+                earliest_goal_timestep = timestep
+    return earliest_goal_timestep
+
 def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     """ my_map      - binary obstacle map
         start_loc   - start position
@@ -124,7 +137,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     open_list = []
     closed_list = dict()
     constraint_table = build_constraint_table(constraints,agent)
-    earliest_goal_timestep = 0
+    earliest_goal_timestep = find_earlist_goal_timestep(goal_loc,constraint_table)
     h_value = h_values[start_loc]
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'timestep': 0}
     push_node(open_list, root)
@@ -133,13 +146,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         curr = pop_node(open_list)
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
-        if curr['loc'] == goal_loc:
-            # build a function for 1.4 (also still need to write in report)
-            max_time = 0
-            for timestep in constraint_table:
-                if(len(constraint_table[timestep]) == 1 and constraint_table[timestep][0] == curr['loc'] and timestep > max_time):
-                    max_time = timestep
-            if(curr['timestep'] > max_time):
+        if curr['loc'] == goal_loc and curr['timestep'] > earliest_goal_timestep:
                 return get_path(curr)
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
