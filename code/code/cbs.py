@@ -11,8 +11,20 @@ def detect_collision(path1, path2):
     #           A vertex collision occurs if both robots occupy the same location at the same timestep
     #           An edge collision occurs if the robots swap their location at the same timestep.
     #           You should use "get_location(path, t)" to get the location of a robot at time t.
-
-    pass
+    t = 0
+    for node1 in path1:
+        # finding vertex collisions 
+        node2 = get_location(path2,t)
+        if(node1 == node2):
+            return {'collision_arr':[node1],'timestep':t}
+        # finding edge collisions
+        if(t > 0):
+            node1_prev = get_location(path1,t-1)
+            node2_prev = get_location(path2,t-1)
+            if(node1 == node2_prev and node2 == node1_prev):
+                return {'collision_arr':[node1,node2],'timestep':t}
+        t = t + 1
+    return None
 
 
 def detect_collisions(paths):
@@ -21,8 +33,14 @@ def detect_collisions(paths):
     #           A collision can be represented as dictionary that contains the id of the two robots, the vertex or edge
     #           causing the collision, and the timestep at which the collision occurred.
     #           You should use your detect_collision function to find a collision between two robots.
-
-    pass
+    collisions = []
+    path_len = len(paths)
+    for i in range(path_len-1):
+        for j in range(i+1,path_len):
+            dict = detect_collision(paths[i], paths[j])
+            if dict != None:
+                collisions.append({'a1':i,'a2':j,'loc':dict['collision_arr'],'timestep':dict['timestep']})
+    return collisions
 
 
 def standard_splitting(collision):
@@ -34,8 +52,16 @@ def standard_splitting(collision):
     #           Edge collision: the first constraint prevents the first agent to traverse the specified edge at the
     #                          specified timestep, and the second constraint prevents the second agent to traverse the
     #                          specified edge at the specified timestep
-
-    pass
+    constraints = []
+    if(len(collision['loc']) == 1):
+        constraints[0] = {'agent':collision['a1'],'loc':collision['loc'],'timestep':collision['timestep']}
+        constraints[1] = {'agent':collision['a2'],'loc':collision['loc'],'timestep':collision['timestep']}
+    elif(len(collision['loc']) == 1):
+        constraints[0] = {'agent':collision['a1'],'loc':collision['loc'],'timestep':collision['timestep']}
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        constraints[1] = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep']}
+    return constraints
 
 
 def disjoint_splitting(collision):
