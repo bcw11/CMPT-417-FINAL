@@ -163,6 +163,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             return None
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
+            if(child_loc[0] < 0 or child_loc[1] < 0):
+                continue
             if my_map[child_loc[0]][child_loc[1]]:
                 continue
             child = {'loc': child_loc,
