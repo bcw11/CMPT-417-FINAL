@@ -56,7 +56,7 @@ def build_constraint_table(constraints, agent):
     constraint_table = {}
     for constraint in constraints:
         if(constraint['agent'] == agent):
-            constraint_table.setdefault(constraint['timestep'],[]).append(constraint['loc'])
+            constraint_table.setdefault(constraint['timestep'],[]).append(constraint['loc'],constraint['positive'])
     return constraint_table
 
 
@@ -67,7 +67,6 @@ def get_location(path, time):
         return path[time]
     else:
         return path[-1]  # wait at the goal location
-
 
 
 def get_path(goal_node):
@@ -128,6 +127,10 @@ def find_earlist_goal_timestep(goal_loc,constraint_table):
                 earliest_goal_timestep = timestep
     return earliest_goal_timestep
 
+# 3.4 checking bounds of board 
+def out_of_bounds(child_loc,my_map):
+    return child_loc[0] < 0 or child_loc[1] < 0 or child_loc[0] >= len(my_map) or child_loc[1] >= len(my_map[0])
+
 def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     """ my_map      - binary obstacle map
         start_loc   - start position
@@ -164,7 +167,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             return None
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
-            if(child_loc[0] < 0 or child_loc[1] < 0):
+            # 3.4 checking if child location is out of bounds of map
+            if(out_of_bounds(child_loc,my_map)):
                 continue
             if my_map[child_loc[0]][child_loc[1]]:
                 continue
