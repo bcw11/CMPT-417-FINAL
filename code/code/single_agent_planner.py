@@ -56,7 +56,7 @@ def build_constraint_table(constraints, agent):
     constraint_table = {}
     for constraint in constraints:
         if(constraint['agent'] == agent):
-            constraint_table.setdefault(constraint['timestep'],[]).append(constraint['loc'],constraint['positive'])
+            constraint_table.setdefault(constraint['timestep'],[]).append([constraint['loc'],constraint['positive']])
     return constraint_table
 
 
@@ -86,12 +86,24 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     #               by time step, see build_constraint_table.
     if(next_time in constraint_table):
         for constraint in constraint_table[next_time]:
-            table_len = len(constraint)
-            if(table_len == 1):
-                if(constraint[0] == next_loc):
+            # print(constraint)
+            num_of_loc = len(constraint[0])
+            # print(num_of_loc)
+            # vertex constraints
+            if(num_of_loc == 1):
+                # positive constraints
+                if(constraint[1] == True):
+                    return constraint[0][0] != next_loc
+                # negative constraints
+                elif(constraint[0][0] == next_loc):
                     return True
-            elif(table_len == 2):
-                if(constraint[0] == curr_loc and constraint[1] == next_loc):
+            # edge constraints
+            elif(num_of_loc == 2):
+                # positive constraints
+                if(constraint[1] == True):
+                    return constraint[0][0] != curr_loc or constraint[0][1] != next_loc
+                # negative constraints
+                elif(constraint[0][0] == curr_loc and constraint[0][1] == next_loc):
                     return True 
             else:
                 print("Error(is_constrained): Too many arguments in table")
@@ -182,7 +194,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                 if compare_nodes(child, existing_node):
                     closed_list[(child['loc'],child['timestep'])] = child
                     push_node(open_list, child)
-            # 1.2 checking for vertex constraints
+            # 1.2 checking for constraints
             elif is_constrained(curr['loc'],child['loc'],child['timestep'],constraint_table):
                 continue
             else:
