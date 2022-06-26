@@ -69,6 +69,7 @@ def get_location(path, time):
         return path[-1]  # wait at the goal location
 
 
+
 def get_path(goal_node):
     path = []
     curr = goal_node
