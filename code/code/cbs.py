@@ -11,9 +11,9 @@ def detect_collision(path1, path2):
     #           A vertex collision occurs if both robots occupy the same location at the same timestep
     #           An edge collision occurs if the robots swap their location at the same timestep.
     #           You should use "get_location(path, t)" to get the location of a robot at time t.
-    t = 0
-    for node1 in path1:
+    for t in range(max(len(path1),len(path2))):
         # finding vertex collisions 
+        node1 = get_location(path1,t)
         node2 = get_location(path2,t)
         if(node1 == node2):
             return {'collision_arr':[node1],'timestep':t}
@@ -23,7 +23,6 @@ def detect_collision(path1, path2):
             node2_prev = get_location(path2,t-1)
             if(node1 == node2_prev and node2 == node1_prev):
                 return {'collision_arr':[node1,node2],'timestep':t}
-        t = t + 1
     return None
 
 
@@ -63,6 +62,7 @@ def standard_splitting(collision):
         loc2 = collision['loc'][1]
         constraints.append({'agent':collision['a1'],'loc':[loc2,loc1],'timestep':collision['timestep']})
         constraints.append({'agent':collision['a2'],'loc':collision['loc'],'timestep':collision['timestep']})
+    # print("INSTANDARDSPLITTING:",constraints)
     return constraints
 
 
@@ -145,11 +145,12 @@ class CBSSolver(object):
         self.push_node(root)
 
         # Task 3.1: Testing
-        print(root['collisions'])
+        print("  root collisions",root['collisions'])
 
         # Task 3.2: Testing
         for collision in root['collisions']:
-            print(standard_splitting(collision))
+            print("  root standard splitting",standard_splitting(collision))
+        print("  root paths",root['paths'])
 
         ##############################
         # Task 3.3: High-Level Search
@@ -159,8 +160,13 @@ class CBSSolver(object):
         #             3. Otherwise, choose the first collision and convert to a list of constraints (using your
         #                standard_splitting function). Add a new child node to your open list for each constraint
         #           Ensure to create a copy of any objects that your child nodes might inherit
+        i = 0
         while(len(self.open_list) > 0):
             P = self.pop_node() 
+            # print("Pcost",P['cost'])
+            # print("Pconstraints",P['constraints'])
+            # print("Ppaths",P['paths'])
+            # print("Pcollisions",P['collisions'])
             # found goal node 
             if len(P['collisions']) == 0:
                 return P['paths']
@@ -169,17 +175,29 @@ class CBSSolver(object):
             constraints = standard_splitting(collision)
             for constraint in constraints:
                 Q = {'cost': 0,
-                    'constraints': P['constraints'] + [constraint],
-                    'paths': P['paths'],
+                    'constraints': P['constraints'].copy() + [constraint],
+                    'paths': P['paths'].copy(),
                     'collisions': []}
                 agent = constraint['agent']
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                           agent, Q['constraints'])
+                # print("constraint:",constraint)
+                # print("path:",path)
                 if(path != None):
                     Q['paths'][agent] = path 
                     Q['collisions'] = detect_collisions(Q['paths'])
                     Q['cost'] = get_sum_of_cost(Q['paths'])
+                    # print("Qcost",Q['cost'])
+                    # print("Qconstraints",Q['constraints'])
+                    # print("Qpaths",Q['paths'])
+                    # print("Qcollisions",Q['collisions'])
+                    # print("\n")
                     self.push_node(Q)
+                
+            # i = i + 1
+            # print("i:",i)
+            # if i == 1:
+            #     break
         self.print_results(root)
         return root['paths']
 
