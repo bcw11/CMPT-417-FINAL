@@ -1,17 +1,14 @@
 import heapq
 
+# pre defined functions 
 def move(loc, dir):
     directions = [(0, -1), (1, 0), (0, 1), (-1, 0), (0,0)]
     return loc[0] + directions[dir][0], loc[1] + directions[dir][1]
-
-
 def get_sum_of_cost(paths):
     rst = 0
     for path in paths:
         rst += len(path) - 1
     return rst
-
-
 def compute_heuristics(my_map, goal):
     # Use Dijkstra to build a shortest-path tree rooted at the goal location
     open_list = []
@@ -45,23 +42,6 @@ def compute_heuristics(my_map, goal):
     for loc, node in closed_list.items():
         h_values[loc] = node['cost']
     return h_values
-
-
-def build_constraint_table(constraints, agent):
-    ##############################
-    # Task 1.2/1.3: Return a table that contains the list of constraints of
-    #               the given agent for each time step. The table can be used
-    #               for a more efficient constraint violation check in the 
-    #               is_constrained function.
-    constraint_table = dict()
-    for constraint in constraints:
-        if(constraint['agent'] == agent):
-            constraint_table.setdefault(constraint['timestep'],[]).append({'loc':constraint['loc'],'positive':constraint['positive']})
-        # elif(constraint['positive'] == True):
-        #     constraint_table.setdefault(constraint['timestep'],[]).append({'loc':constraint['loc'],'positive':False})
-    return constraint_table
-
-
 def get_location(path, time):
     if time < 0:
         return path[0]
@@ -69,8 +49,6 @@ def get_location(path, time):
         return path[time]
     else:
         return path[-1]  # wait at the goal location
-
-
 def get_path(goal_node):
     path = []
     curr = goal_node
@@ -79,7 +57,27 @@ def get_path(goal_node):
         curr = curr['parent']
     path.reverse()
     return path
+def push_node(open_list, node):
+    heapq.heappush(open_list, (node['g_val'] + node['h_val'], node['h_val'], node['loc'], node))
+def pop_node(open_list):
+    _, _, _, curr = heapq.heappop(open_list)
+    return curr
+def compare_nodes(n1, n2):
+    """Return true is n1 is better than n2."""
+    return n1['g_val'] + n1['h_val'] < n2['g_val'] + n2['h_val']
 
+# my functions 
+def build_constraint_table(constraints, agent):
+    ##############################
+    # Task 1.2/1.3: Return a table that contains the list of constraints of
+    #               the given agent for each time step. The table can be used
+    #               for a more efficient constraint violation check in the 
+    #               is_constrained function.
+    constraint_table = {}
+    for constraint in constraints:
+        if(constraint['agent'] == agent):
+            constraint_table.setdefault(constraint['timestep'],[]).append({'loc':constraint['loc'],'positive':constraint['positive']})
+    return constraint_table
 
 def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     ##############################
@@ -90,20 +88,17 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
         for constraint in constraint_table[next_time]:
             # vertex constraints
             if(len(constraint['loc']) == 1):
-                # positive constraint
-                if(constraint['positive'] == True):
-                    return constraint['loc'][0] != next_loc
-                # negative constraint
-                elif(constraint['loc'][0] == next_loc):
+                if(constraint['loc'][0] == next_loc and constraint['positive'] == False):
+                    return True
+                elif(constraint['loc'][0] != next_loc and constraint['positive'] == True):
                     return True
             # edge constraints
             else:
-                # positive constraints
-                if(constraint['positive'] == True):
-                    return constraint['loc'][0] != curr_loc or constraint['loc'][1] != next_loc
-                # negative constraints
-                elif(constraint['loc'][0] == curr_loc and constraint['loc'][1] == next_loc):
-                    return True 
+                if(constraint['loc'][0] == curr_loc and constraint['loc'][1] == next_loc and constraint['positive'] == False):
+                    return True
+                elif((constraint['loc'][0] != curr_loc or constraint['loc'][1] != next_loc) and constraint['positive'] == True):
+                    return True
+                
     # 2.3 checking for additional constraints (agents that have reached goal node)
     if(-1 in constraint_table):
         for constraint in constraint_table[-1]:
@@ -111,26 +106,12 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
                 return True
     return False        
 
-
-def push_node(open_list, node):
-    heapq.heappush(open_list, (node['g_val'] + node['h_val'], node['h_val'], node['loc'], node))
-
-
-def pop_node(open_list):
-    _, _, _, curr = heapq.heappop(open_list)
-    return curr
-
-
-def compare_nodes(n1, n2):
-    """Return true is n1 is better than n2."""
-    return n1['g_val'] + n1['h_val'] < n2['g_val'] + n2['h_val']
-
-
 # 1.4 finds the earlist goal time step
 def find_earlist_goal_timestep(goal_loc,constraint_table):
     earliest_goal_timestep = 0
     for timestep, constraints in constraint_table.items():
         for constraint in constraints:
+            # print(constraint)
             if (constraint['positive'] == False and len(constraint['loc']) == 1  \
                     and constraint['loc'][0] == goal_loc and timestep > earliest_goal_timestep):
                 earliest_goal_timestep = timestep
@@ -147,12 +128,12 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         agent       - the agent that is being re-planned
         constraints - constraints defining where robot should or cannot go at each timestep
     """
-
     ##############################
     # Task 1.1: Extend the A* search to search in the space-time domain
     #           rather than space domain, only.
     open_list = []
     closed_list = dict()
+    
     # 1.2 building a constraint table
     constraint_table = build_constraint_table(constraints,agent)
     # 1.4 finding earlist goal time step for goal constraints
@@ -169,8 +150,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         curr = pop_node(open_list)
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
-        if curr['loc'] == goal_loc and curr['timestep'] > earliest_goal_timestep:
-                return get_path(curr)
+        if curr['loc'] == goal_loc and curr['timestep'] >= earliest_goal_timestep:
+            return get_path(curr)
         elif curr['timestep'] > largest_timestep:
             return None
         for dir in range(5):
