@@ -107,6 +107,7 @@ if __name__ == '__main__':
             raise RuntimeError("Unknown solver!")
 
         cost = get_sum_of_cost(paths)
+        # result_file.write("{},{} | {},{}\n".format(file, cost,cbs.num_of_expanded,cbs.num_of_generated))
         result_file.write("{},{}\n".format(file, cost))
 
 

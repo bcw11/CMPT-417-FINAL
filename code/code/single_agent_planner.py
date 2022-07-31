@@ -111,7 +111,6 @@ def find_earlist_goal_timestep(goal_loc,constraint_table):
     earliest_goal_timestep = 0
     for timestep, constraints in constraint_table.items():
         for constraint in constraints:
-            # print(constraint)
             if (constraint['positive'] == False and len(constraint['loc']) == 1  \
                     and constraint['loc'][0] == goal_loc and timestep > earliest_goal_timestep):
                 earliest_goal_timestep = timestep

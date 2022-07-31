@@ -52,15 +52,15 @@ class PrioritizedPlanningSolver(object):
                 for j in range(len(path)):
                     if(agent != i):
                         # 2.1 creating vertex constraints
-                        vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':j}
+                        vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':j,'positive':False}
                         constraints.append(vert_constraint)
                         # 2.3 creating additional constraints for agents at goal locations
                         if(j == len(path)-1):
-                            vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':-1}
+                            vert_constraint = {'agent':agent,'loc':[path[j]],'timestep':-1,'positive':False}
                             constraints.append(vert_constraint)
                         # 2.2 creating edge constraints 
                         if(j > 0):
-                            edge_constraint = {'agent':agent,'loc':[path[j],path[j-1]],'timestep':j}
+                            edge_constraint = {'agent':agent,'loc':[path[j],path[j-1]],'timestep':j,'positive':False}
                             constraints.append(edge_constraint)
             # recalculating paths based on generated constraints 
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
