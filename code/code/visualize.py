@@ -8,7 +8,7 @@ Colors = ['green', 'blue', 'orange']
 
 
 class Animation:
-    def __init__(self, my_map, starts, goals, paths):
+    def __init__(self, my_map, starts, goals, paths, sizes):
         self.my_map = np.flip(np.transpose(my_map), 1)
         self.starts = []
         for start in starts:
@@ -22,6 +22,7 @@ class Animation:
                 self.paths.append([])
                 for loc in path:
                     self.paths[-1].append((loc[1], len(self.my_map[0]) - 1 - loc[0]))
+        self.sizes = sizes
 
         aspect = len(self.my_map) / len(self.my_map[0])
 
@@ -34,6 +35,7 @@ class Animation:
         self.artists = []
         self.agents = dict()
         self.agent_names = dict()
+        
         # create boundary patch
 
         x_min = -0.5
@@ -57,14 +59,20 @@ class Animation:
                                           edgecolor='black', alpha=0.5))
         for i in range(len(self.paths)):
             name = str(i)
-            self.agents[i] = Circle((starts[i][0], starts[i][1]), 0.3, facecolor=Colors[i % len(Colors)],
+            size = self.sizes[i]*0.25
+            # only works for 2x2
+            if(size > 0.25):
+                size = size*1.5
+            self.agents[i] = Circle((starts[i][0], starts[i][1]), size, facecolor=Colors[i % len(Colors)],
                                     edgecolor='black')
+            
             self.agents[i].original_face_color = Colors[i % len(Colors)]
             self.patches.append(self.agents[i])
             self.T = max(self.T, len(paths[i]) - 1)
             self.agent_names[i] = self.ax.text(starts[i][0], starts[i][1] + 0.25, name)
             self.agent_names[i].set_horizontalalignment('center')
             self.agent_names[i].set_verticalalignment('center')
+
             self.artists.append(self.agent_names[i])
 
         self.animation = animation.FuncAnimation(self.fig, self.animate_func,
@@ -94,7 +102,10 @@ class Animation:
     def animate_func(self, t):
         for k in range(len(self.paths)):
             pos = self.get_state(t / 10, self.paths[k])
-            self.agents[k].center = (pos[0], pos[1])
+
+            offset = (self.sizes[k]-1) * 0.5
+            self.agents[k].center = (pos[0]+offset, pos[1]-offset) # CHANGE CENTER HERE 
+
             self.agent_names[k].set_position((pos[0], pos[1] + 0.5))
 
         # reset all colors
@@ -109,7 +120,8 @@ class Animation:
                 d2 = agents_array[j]
                 pos1 = np.array(d1.center)
                 pos2 = np.array(d2.center)
-                if np.linalg.norm(pos1 - pos2) < 0.7:
+                t = (self.agents[i].get_radius() + self.agents[j].get_radius()) 
+                if np.linalg.norm(pos1 - pos2) < t:
                     d1.set_facecolor('red')
                     d2.set_facecolor('red')
                     print("COLLISION! (agent-agent) ({}, {}) at time {}".format(i, j, t/10))

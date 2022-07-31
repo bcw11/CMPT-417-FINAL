@@ -10,12 +10,13 @@ from single_agent_planner import get_sum_of_cost
 
 SOLVER = "CBS"
 
-def print_mapf_instance(my_map, starts, goals):
+def print_mapf_instance(my_map, starts, goals, sizes):
     print('Start locations')
     print_locations(my_map, starts)
     print('Goal locations')
     print_locations(my_map, goals)
-
+    print('Sizes')
+    print(sizes)
 
 def print_locations(my_map, locations):
     starts_map = [[-1 for _ in range(len(my_map[0]))] for _ in range(len(my_map))]
@@ -60,13 +61,31 @@ def import_mapf_instance(filename):
     # #agents lines with the start/goal positions
     starts = []
     goals = []
+    sizes = []
     for a in range(num_agents):
         line = f.readline()
-        sx, sy, gx, gy = [int(x) for x in line.split(' ')]
+        # sx, sy, gx, gy = [int(x) for x in line.split(' ')]
+        size = 1
+        line_arr = line.split(' ')
+        for x in range(len(line_arr)):
+            if x == 0:
+                sx = int(line_arr[0])
+            elif x == 1:
+                sy = int(line_arr[1])
+            elif x == 2:
+                gx = int(line_arr[2])
+            elif x == 3:
+                gy = int(line_arr[3])
+            elif x == 4:
+                size = int(line_arr[4])
+
         starts.append((sx, sy))
         goals.append((gx, gy))
+        sizes.append(size)
+
+
     f.close()
-    return my_map, starts, goals
+    return my_map, starts, goals, sizes
 
 
 if __name__ == '__main__':
@@ -88,8 +107,8 @@ if __name__ == '__main__':
     for file in sorted(glob.glob(args.instance)):
 
         print("***Import an instance***")
-        my_map, starts, goals = import_mapf_instance(file)
-        print_mapf_instance(my_map, starts, goals)
+        my_map, starts, goals, sizes = import_mapf_instance(file)
+        print_mapf_instance(my_map, starts, goals, sizes)
 
         if args.solver == "CBS":
             print("***Run CBS***")
@@ -113,7 +132,7 @@ if __name__ == '__main__':
 
         if not args.batch:
             print("***Test paths on a simulation***")
-            animation = Animation(my_map, starts, goals, paths)
+            animation = Animation(my_map, starts, goals, paths, sizes)
             # animation.save("output.mp4", 1.0)
             animation.show()
     result_file.close()
