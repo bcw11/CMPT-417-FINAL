@@ -60,7 +60,7 @@ class Animation:
         for i in range(len(self.paths)):
             name = str(i)
             size = self.sizes[i]*0.25
-            # only works for 2x2
+            # only scaled for 2x2 agents 
             if(size > 0.25):
                 size = size*1.5
             self.agents[i] = Circle((starts[i][0], starts[i][1]), size, facecolor=Colors[i % len(Colors)],
