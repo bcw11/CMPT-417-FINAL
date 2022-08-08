@@ -116,7 +116,7 @@ if __name__ == '__main__':
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "Independent":
             print("***Run Independent***")
-            solver = IndependentSolver(my_map, starts, goals)
+            solver = IndependentSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
             print("***Run Prioritized***")

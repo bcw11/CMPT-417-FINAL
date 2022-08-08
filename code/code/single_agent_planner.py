@@ -120,7 +120,7 @@ def find_earlist_goal_timestep(goal_loc,constraint_table):
 def out_of_bounds(child_loc,my_map):
     return child_loc[0] < 0 or child_loc[1] < 0 or child_loc[0] >= len(my_map) or child_loc[1] >= len(my_map[0])
 
-def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
+def a_star(my_map, start_loc, goal_loc, size, h_values, agent, constraints):
     """ my_map      - binary obstacle map
         start_loc   - start position
         goal_loc    - goal position
@@ -158,6 +158,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             # 3.4 checking if child location is out of bounds of map
             if out_of_bounds(child_loc,my_map) or my_map[child_loc[0]][child_loc[1]]:
                 continue
+            if size == 2:
+                if two_by_two_out_of_bounds(child_loc, my_map):
+                    continue
             child = {'loc': child_loc,
                     'g_val': curr['g_val'] + 1,
                     'h_val': h_values[child_loc],
@@ -175,3 +178,19 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                 closed_list[(child['loc'],child['timestep'])] = child
                 push_node(open_list, child)
     return None  # Failed to find solutions
+
+
+def two_by_two_out_of_bounds(loc, my_map):
+    top_left = loc
+    top_right = loc[0] + 1, loc[1]
+    bottom_left = loc[0], loc[1] + 1
+    bottom_right = loc[0] + 1, loc[1] + 1
+    if my_map[top_left[0]][top_left[1]] or out_of_bounds(top_left, my_map):
+        return True
+    if my_map[top_right[0]][top_right[1]] or out_of_bounds(top_right, my_map):
+        return True
+    if my_map[bottom_left[0]][bottom_left[1]] or out_of_bounds(bottom_left, my_map):
+        return True
+    if my_map[bottom_right[0]][bottom_right[1]] or out_of_bounds(bottom_right, my_map):
+        return True
+    return False

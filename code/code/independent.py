@@ -5,7 +5,7 @@ from single_agent_planner import compute_heuristics, a_star, get_sum_of_cost
 class IndependentSolver(object):
     """A planner that plans for each robot independently."""
 
-    def __init__(self, my_map, starts, goals):
+    def __init__(self, my_map, starts, goals, sizes):
         """my_map   - list of lists specifying obstacle positions
         starts      - [(x1, y1), (x2, y2), ...] list of start locations
         goals       - [(x1, y1), (x2, y2), ...] list of goal locations
@@ -14,6 +14,7 @@ class IndependentSolver(object):
         self.my_map = my_map
         self.starts = starts
         self.goals = goals
+        self.sizes = sizes
         self.num_of_agents = len(goals)
 
         self.CPU_time = 0
@@ -33,7 +34,7 @@ class IndependentSolver(object):
         # Task 0: Understand the following code (see the lab description for some hints)
 
         for i in range(self.num_of_agents):  # Find path for each agent
-            path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
+            path = a_star(self.my_map, self.starts[i], self.goals[i], self.sizes[i], self.heuristics[i],
                           i, [])
             if path is None:
                 raise BaseException('No solutions')
