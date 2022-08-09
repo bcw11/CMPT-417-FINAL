@@ -45,13 +45,11 @@ def compute_heuristics(my_map, goal):
         h_values[loc] = node['cost']
     return h_values
 
-def get_location(path, time):
-    if time < 0:
-        return path[0]
-    elif time < len(path):
-        return path[time]
-    else:
-        return path[-1]  # wait at the goal location
+def get_location(path, t, size):
+    t = max(0,t)
+    if(t >= len(path)):
+        t = -1
+    return get_coords(path[t],size)
 
 def get_path(goal_node):
     path = []
@@ -122,7 +120,24 @@ def find_earlist_goal_timestep(goal_loc,constraint_table):
 def out_of_bounds(child_loc,my_map):
     return child_loc[0] < 0 or child_loc[1] < 0 or child_loc[0] >= len(my_map) or child_loc[1] >= len(my_map[0])
 
-def a_star(my_map, start_loc, goal_loc, size, h_values, agent, constraints):
+def get_coords(loc, size):
+    # referencing agent from top left
+    coords = []
+    for i in range (size):
+        for j in range (size):
+            coords.append((loc[0]+i,loc[1]+j))
+    return coords
+
+# checking bounds of board for 2x2 agent
+def sized_out_of_bounds(loc, my_map, size):
+    coords = get_coords(loc,size)
+
+    for coord in coords:
+        if my_map[coord[0]][coord[1]] or out_of_bounds(coord,my_map):
+            return True
+    return False
+
+def a_star(my_map, start_loc, goal_loc, h_values, agent, size, constraints):
 
     open_list = []
     closed_list = dict()
@@ -158,8 +173,8 @@ def a_star(my_map, start_loc, goal_loc, size, h_values, agent, constraints):
             if out_of_bounds(child_loc,my_map) or my_map[child_loc[0]][child_loc[1]]:
                 continue
             # checking if 2x2 agent is out of bounds of map
-            if size == 2:
-                if two_by_two_out_of_bounds(child_loc, my_map):
+            if size > 1:
+                if sized_out_of_bounds(child_loc,my_map,size):
                     continue
             
             # child node
@@ -184,19 +199,3 @@ def a_star(my_map, start_loc, goal_loc, size, h_values, agent, constraints):
                 push_node(open_list, child)
 
     return None  # Failed to find solutions
-
-
-def two_by_two_out_of_bounds(loc, my_map):
-    top_left = loc
-    top_right = loc[0] + 1, loc[1]
-    bottom_left = loc[0], loc[1] + 1
-    bottom_right = loc[0] + 1, loc[1] + 1
-    if my_map[top_left[0]][top_left[1]] or out_of_bounds(top_left, my_map):
-        return True
-    if my_map[top_right[0]][top_right[1]] or out_of_bounds(top_right, my_map):
-        return True
-    if my_map[bottom_left[0]][bottom_left[1]] or out_of_bounds(bottom_left, my_map):
-        return True
-    if my_map[bottom_right[0]][bottom_right[1]] or out_of_bounds(bottom_right, my_map):
-        return True
-    return False

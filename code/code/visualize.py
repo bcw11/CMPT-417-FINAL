@@ -55,7 +55,14 @@ class Animation:
         self.T = 0
         # draw goals first
         for i, goal in enumerate(self.goals):
-            self.patches.append(Rectangle((goal[0] - 0.25, goal[1] - 0.25), 0.5, 0.5, facecolor=Colors[i % len(Colors)],
+
+            # TODO: make scale and offset of goal work for all types of sizes 
+            size = self.sizes[i]
+            y_scale = 1
+            if(size > 1):
+                y_scale = size*2.5
+                size = size*1.5
+            self.patches.append(Rectangle((goal[0] - 0.25, goal[1] - 0.25*y_scale), 0.5*size, 0.5*size, facecolor=Colors[i % len(Colors)],
                                           edgecolor='black', alpha=0.5))
         for i in range(len(self.paths)):
             name = str(i)
@@ -77,8 +84,8 @@ class Animation:
 
         self.animation = animation.FuncAnimation(self.fig, self.animate_func,
                                                  init_func=self.init_func,
-                                                 frames=int(self.T + 1) * 10,
-                                                 interval=100,
+                                                 frames=int(self.T + 1) * 30,
+                                                 interval=10, # changes speed of animation
                                                  blit=True)
 
     def save(self, file_name, speed):
