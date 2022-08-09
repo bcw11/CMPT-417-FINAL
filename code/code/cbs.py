@@ -5,14 +5,8 @@ import heapq
 import random
 from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
 
-
+# detects a single collision between paths 
 def detect_collision(path1, path2):
-    ##############################
-    # Task 3.1: Return the first collision that occurs between two robot paths (or None if there is no collision)
-    #           There are two types of collisions: vertex collision and edge collision.
-    #           A vertex collision occurs if both robots occupy the same location at the same timestep
-    #           An edge collision occurs if the robots swap their location at the same timestep.
-    #           You should use "get_location(path, t)" to get the location of a robot at time t.
     for t in range(max(len(path1),len(path2))):
         node1 = get_location(path1,t)
         node2 = get_location(path2,t)
@@ -27,13 +21,8 @@ def detect_collision(path1, path2):
         node2_prev = node2
     return None
 
-
+# detects all collisions between agants 
 def detect_collisions(paths):
-    ##############################
-    # Task 3.1: Return a list of first collisions between all robot pairs.
-    #           A collision can be represented as dictionary that contains the id of the two robots, the vertex or edge
-    #           causing the collision, and the timestep at which the collision occurred.
-    #           You should use your detect_collision function to find a collision between two robots.
     collisions = []
     num_of_paths = len(paths)
     for i in range(num_of_paths-1):
@@ -44,15 +33,8 @@ def detect_collisions(paths):
     return collisions
 
 
+# splits collision into two negative constraints 
 def standard_splitting(collision):
-    ##############################
-    # Task 3.2: Return a list of (two) constraints to resolve the given collision
-    #           Vertex collision: the first constraint prevents the first agent to be at the specified location at the
-    #                            specified timestep, and the second constraint prevents the second agent to be at the
-    #                            specified location at the specified timestep.
-    #           Edge collision: the first constraint prevents the first agent to traverse the specified edge at the
-    #                          specified timestep, and the second constraint prevents the second agent to traverse the
-    #                          specified edge at the specified timestep
     constraints = []
     # vertex collision 
     if(len(collision['loc']) == 1):
@@ -67,16 +49,8 @@ def standard_splitting(collision):
     return constraints
 
 
+# splits collision into one random and one positive constraint 
 def disjoint_splitting(collision):
-    ##############################
-    # Task 4.2: Return a list of (two) constraints to resolve the given collision
-    #           Vertex collision: the first constraint enforces one agent to be at the specified location at the
-    #                            specified timestep, and the second constraint prevents the same agent to be at the
-    #                            same location at the timestep.
-    #           Edge collision: the first constraint enforces one agent to traverse the specified edge at the
-    #                          specified timestep, and the second constraint prevents the same agent to traverse the
-    #                          specified edge at the specified timestep
-    #           Choose the agent randomly
     constraints = []
     agent = random.randint(0,1)
     agent = list(collision.values())[agent]
@@ -96,7 +70,8 @@ def disjoint_splitting(collision):
             constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':True})
     return constraints
 
-# 4.3 computes list of agents that violate a given positive constraint 
+
+# computes list of agents that violate a given positive constraint 
 def paths_violate_constraint(constraint,paths):
     violating_agents = []
     for agent in range(len(paths)):
@@ -117,8 +92,6 @@ def paths_violate_constraint(constraint,paths):
 
 
 class CBSSolver(object):
-    """The high-level search of CBS."""
-
     def __init__(self, my_map, starts, goals):
         """my_map   - list of lists specifying obstacle positions
         starts      - [(x1, y1), (x2, y2), ...] list of start locations
@@ -169,9 +142,9 @@ class CBSSolver(object):
         root['cost'] = get_sum_of_cost(root['paths'])
         root['collisions'] = detect_collisions(root['paths'])
         self.push_node(root)
-
+        
+        # High-Level Search
         ##############################
-        # Task 3.3: High-Level Search
         while(len(self.open_list) > 0):
             P = self.pop_node() 
             # found goal node 
@@ -187,6 +160,7 @@ class CBSSolver(object):
 
             # applying constraints child paths
             for constraint in constraints:
+
                 # creating child node 
                 if(constraint in P['constraints']):
                     continue
@@ -224,7 +198,7 @@ class CBSSolver(object):
         self.print_results(root)
         return root['paths']
 
-
+    
     def print_results(self, node):
         print("\n Found a solution! \n")
         CPU_time = timer.time() - self.start_time
