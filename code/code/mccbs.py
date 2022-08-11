@@ -17,12 +17,12 @@ def detect_collision(path1,path2,sizes):
                 return {'loc':[node1[0]],'timestep':t}
         # finding edge collisions
         # note: edge collisions only occur only between 1x1 agents 
-        node1_prev = node1
-        node2_prev = node2
         if(t > 0):
             if(node1 == node2_prev and node2 == node1_prev):
                 # note: need to return node[0] since get_location returns an array of positions
                 return {'loc':[node2[0],node1[0]],'timestep':t} 
+        node1_prev = node1
+        node2_prev = node2
     return None
 
 # detects all collisions between agants 
@@ -76,7 +76,6 @@ def disjoint_splitting(collision):
 
 
 # computes list of agents that violate a given positive constraint 
-# TODO: need to update implementation with new get_location()
 def paths_violate_constraint(constraint,paths,sizes):
     violating_agents = []
     for agent in range(len(paths)):
@@ -97,6 +96,13 @@ def paths_violate_constraint(constraint,paths,sizes):
                 elif prev == constraint['loc'][1] and curr == constraint['loc'][0]:
                     violating_agents.append(agent)
     return violating_agents
+
+def print_node(node):
+    print("cost: ",node['cost'])
+    print("constraints: ",node['constraints'])
+    print("paths: ",node['paths'])
+    print("collisions: ",node['collisions'])
+    print("\n")
 
 
 class MCCBSSolver(object):
@@ -165,6 +171,8 @@ class MCCBSSolver(object):
             else:
                 constraints = standard_splitting(collision)
 
+            # print_node(P)
+
             # applying constraints child paths
             for constraint in constraints:
 
@@ -201,6 +209,7 @@ class MCCBSSolver(object):
                 if(not None in Q['paths']):
                     Q['collisions'] = detect_collisions(Q['paths'],self.sizes)
                     Q['cost'] = get_sum_of_cost(Q['paths'])
+                    # print_node(Q)
                     self.push_node(Q)
         self.print_results(root)
         return root['paths']
@@ -213,3 +222,5 @@ class MCCBSSolver(object):
         print("Sum of costs:    {}".format(get_sum_of_cost(node['paths'])))
         print("Expanded nodes:  {}".format(self.num_of_expanded))
         print("Generated nodes: {}".format(self.num_of_generated))
+
+    
