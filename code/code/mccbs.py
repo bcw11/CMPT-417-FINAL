@@ -60,7 +60,6 @@ def sym_splitting(self, collision):
     
     # euclidean_points = get_euclidean_space(self,collision)
 
-
     # vertex collision 
     # Do sym splitting
     # Select a point and prevent any point which could lead to touhcing it
@@ -71,40 +70,55 @@ def sym_splitting(self, collision):
 
         a1 = collision['a1']
         a2 = collision['a2']
-
-        x_bound = collision['loc'][0] - self.sizes[a1] - 1
-        y_bound = collision['loc'][1] - self.sizes[a1] - 1
-
-        x = collision['loc'][0]
-        y = collision['loc'][1]
-
-        while(x >= x_bound):
-            while(y >= y_bound):
-                a1_constraints.append({'agent':collision['a1'],'loc':(x,y),'timestep':collision['timestep'],'positive':False})
-                y = y -1
-            x = x -1
         
-        x_bound = collision['loc'][0] - self.sizes[a2] - 1
-        y_bound = collision['loc'][1] - self.sizes[a2] - 1
+        # [(),()]
+        # []
+        col = collision['loc'][0]
+        x_bound = col[0] - (self.sizes[a1] - 1)
+        y_bound = col[1] - (self.sizes[a1] - 1)
+
+        x = col[0]
+        y = col[1]
 
         while(x >= x_bound):
             while(y >= y_bound):
-                a2_constraints.append({'agent':collision['a2'],'loc':(x,y),'timestep':collision['timestep'],'positive':False})
-                y = y -1
-            x = x -1
+                a1_constraints.append({'agent':collision['a1'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False})
+                y = y - 1
+            x = x - 1
+        
+        x_bound = col[0] - (self.sizes[a2] - 1)
+        y_bound = col[1] - (self.sizes[a2] - 1)
 
+        x = col[0]
+        y = col[1]
+
+        while(x >= x_bound):
+            while(y >= y_bound):
+                a2_constraints.append({'agent':collision['a2'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False})
+                y = y - 1
+            x = x - 1
+        #print("Constraints before appending:", constraints)
+        #print("a1_const",a1_constraints)
+        #print("a2_const",a2_constraints)
+        return [a1_constraints,a2_constraints]
         constraints.append(a1_constraints)
-        constraints.append(a2_constraints)    
-        return constraints
+        constraints.append(a2_constraints)   
 
     # edge collision 
-    #Only 1x1 so leave untouched
+    #Only 1x1 so leave untouched[ [ ], [ ] ]
     else:
         loc1 = collision['loc'][0]
         loc2 = collision['loc'][1]
-        constraints.append({'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
-        constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
+        a1_constraints = [{'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}]
+        a2_constraints = [{'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}]
+        
+        return [a1_constraints,a2_constraints]
+        #constraints.append([{'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}])
+        #constraints.append([{'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}])
+
+    print("From sym:",constraints)
     return constraints
+
 
 # splits collision into one random and one positive constraint 
 def disjoint_splitting(collision):
@@ -228,24 +242,46 @@ class MCCBSSolver(object):
             # print_node(P)
 
             # applying constraints child paths
-            # note: constraints is a set of constraints for each agent
+            # note: constraints is a set of constraints for each agent [] {}
+            # vertex: [  [a1] ,     [a2]   ]
+            # edge: [  [a1]  ]
+            #print("Constraints to iterate over:", constraints)
+            #constraints = list(dict.fromkeys(constraints))
+            #print("Constraints:", constraints)
             for constraint in constraints:
+                
+                #[constraint]
                 # creating child node 
-                if(constraint in P['constraints']):
+                for const in constraint:
+                    if(const in P['constraints']):
+                        constraint.remove(const)
+                
+                if(constraint == []):
                     continue
+                #######
+                # if type(constraint) == list:
                 Q = {'cost': 0,
-                    'constraints': P['constraints'].copy() + [constraint],
+                    'constraints': P['constraints'].copy() + constraint,
                     'paths': P['paths'].copy(),
                     'collisions': []}
+                #print("Q constraints",Q['constraints'])
+                # else:
+                #     Q = {'cost': 0,
+                #         'constraints': P['constraints'].copy() + [constraint],
+                #         'paths': P['paths'].copy(),
+                #         'collisions': []}
                 
                 # find new path for constraint agent
-                agent = constraint['agent']
+                #print("Constgraint:", constraint)
+                agent = constraint[0]['agent']
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                         agent, self.sizes[agent], Q['constraints']) 
                 Q['paths'][agent] = path 
                 
                 # find new path for violating agents
-                if(constraint['positive'] == True):
+                # note: quick fix not final 
+                # constraint[0]['positive'] == True
+                if(disjoint):
                     violating_agents = paths_violate_constraint(constraint,Q['paths'],self.sizes)
                     for violating_agent in violating_agents:
                         # creating new negative constraint for violating agent
