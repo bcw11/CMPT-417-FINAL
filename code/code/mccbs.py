@@ -52,6 +52,44 @@ def standard_splitting(collision):
         constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
     return constraints
 
+def sym_splitting(self, collision):
+    constraints = []
+    # vertex collision 
+    #Do sym splitting
+    # Select a point and prevent any point which could lead to touhcing it
+    if(len(collision['loc']) == 1):
+
+        agent1 = collision['a1']
+        size1 = self.sizes[agent1]
+
+        agent2 = collision['a2']
+        size2 = self.sizes[agent2]
+
+        loc = collision['loc']
+
+        i = loc[0]
+        j = loc[1]
+
+        while(i > loc[0] - size1):
+            while(j > loc[1] - size1):
+                constraints.append({'agent':collision['a1'],'loc':(i,j),'timestep':collision['timestep'],'positive':False})
+                j = j -1
+            i = i -1
+        
+        while(i > loc[0] - size2):
+            while(j > loc[1] - size2):
+                constraints.append({'agent':collision['a2'],'loc':(i,j),'timestep':collision['timestep'],'positive':False})
+                j = j -1
+            i = i -1
+    
+    # edge collision 
+    #Only 1x1 so leave untouched
+    else:
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        constraints.append({'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
+        constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
+    return constraints
 
 # splits collision into one random and one positive constraint 
 def disjoint_splitting(collision):
