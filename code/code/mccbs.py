@@ -55,8 +55,7 @@ def standard_splitting(collision):
 # def get_euclidean_space(self,collision):
 #     return collision
 
-def sym_splitting(self, collision):
-    constraints = []
+def sym_splitting(self, collision, old_constraints):
     
     # euclidean_points = get_euclidean_space(self,collision)
 
@@ -79,10 +78,12 @@ def sym_splitting(self, collision):
 
         x = col[0]
         y = col[1]
-
+        # pconstraints = [{constraint},{constraint}]
         while(x >= x_bound):
             while(y >= y_bound):
-                a1_constraints.append({'agent':collision['a1'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False})
+                c= {'agent':collision['a1'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
+                if c not in old_constraints:
+                    a1_constraints.append(c)
                 y = y - 1
             x = x - 1
         
@@ -94,30 +95,32 @@ def sym_splitting(self, collision):
 
         while(x >= x_bound):
             while(y >= y_bound):
-                a2_constraints.append({'agent':collision['a2'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False})
+                c = {'agent':collision['a2'],'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
+                if c not in old_constraints:
+                    a2_constraints.append(c)
                 y = y - 1
             x = x - 1
         #print("Constraints before appending:", constraints)
         #print("a1_const",a1_constraints)
         #print("a2_const",a2_constraints)
         return [a1_constraints,a2_constraints]
-        constraints.append(a1_constraints)
-        constraints.append(a2_constraints)   
 
     # edge collision 
     #Only 1x1 so leave untouched[ [ ], [ ] ]
     else:
         loc1 = collision['loc'][0]
         loc2 = collision['loc'][1]
-        a1_constraints = [{'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}]
-        a2_constraints = [{'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}]
-        
+
+        c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a1_constraints = [c]
+        c = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a2_constraints = [c]
+
         return [a1_constraints,a2_constraints]
         #constraints.append([{'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}])
         #constraints.append([{'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}])
-
-    print("From sym:",constraints)
-    return constraints
 
 
 # splits collision into one random and one positive constraint 
@@ -236,7 +239,7 @@ class MCCBSSolver(object):
             if(disjoint):
                 constraints = disjoint_splitting(collision)
             else:
-                constraints = sym_splitting(self,collision)
+                constraints = sym_splitting(self,collision, P['constraints'])
                 # constraints = standard_splitting(collision)
 
             # print_node(P)
@@ -252,9 +255,9 @@ class MCCBSSolver(object):
                 
                 #[constraint]
                 # creating child node 
-                for const in constraint:
-                    if(const in P['constraints']):
-                        constraint.remove(const)
+                # for const in constraint:
+                #     if(const in P['constraints']):
+                #         constraint.remove(const)
                 
                 if(constraint == []):
                     continue
