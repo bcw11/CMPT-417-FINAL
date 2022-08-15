@@ -45,12 +45,6 @@ def compute_heuristics(my_map, goal):
         h_values[loc] = node['cost']
     return h_values
 
-def get_location(path, t, size):
-    t = max(0,t)
-    if(t >= len(path)):
-        t = -1
-    return get_coords(path[t],size)
-
 def get_path(goal_node):
     path = []
     curr = goal_node
@@ -119,6 +113,12 @@ def find_earlist_goal_timestep(goal_loc,constraint_table):
 # checking bounds of board 
 def out_of_bounds(child_loc,my_map):
     return child_loc[0] < 0 or child_loc[1] < 0 or child_loc[0] >= len(my_map) or child_loc[1] >= len(my_map[0])
+
+def get_location(path, t, size):
+    t = max(0,t)
+    if(t >= len(path)):
+        t = -1
+    return get_coords(path[t],size)
 
 def get_coords(loc, size):
     # referencing agent from top left

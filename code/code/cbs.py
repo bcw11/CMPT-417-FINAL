@@ -7,15 +7,11 @@ from single_agent_planner import compute_heuristics, a_star, get_location, get_s
 
 
 def detect_collision(path1, path2):
-    ##############################
-    # Task 3.1: Return the first collision that occurs between two robot paths (or None if there is no collision)
-    #           There are two types of collisions: vertex collision and edge collision.
-    #           A vertex collision occurs if both robots occupy the same location at the same timestep
-    #           An edge collision occurs if the robots swap their location at the same timestep.
-    #           You should use "get_location(path, t)" to get the location of a robot at time t.
     for t in range(max(len(path1),len(path2))):
-        node1 = get_location(path1,t)
-        node2 = get_location(path2,t)
+        node1 = get_location(path1,t,1)
+        node2 = get_location(path2,t,1)
+        node1 = node1[0]
+        node2 = node2[0]
         # finding vertex collisions 
         if(node1 == node2):
             return {'loc':[node1],'timestep':t}
@@ -29,11 +25,6 @@ def detect_collision(path1, path2):
 
 
 def detect_collisions(paths):
-    ##############################
-    # Task 3.1: Return a list of first collisions between all robot pairs.
-    #           A collision can be represented as dictionary that contains the id of the two robots, the vertex or edge
-    #           causing the collision, and the timestep at which the collision occurred.
-    #           You should use your detect_collision function to find a collision between two robots.
     collisions = []
     num_of_paths = len(paths)
     for i in range(num_of_paths-1):
@@ -45,14 +36,6 @@ def detect_collisions(paths):
 
 
 def standard_splitting(collision):
-    ##############################
-    # Task 3.2: Return a list of (two) constraints to resolve the given collision
-    #           Vertex collision: the first constraint prevents the first agent to be at the specified location at the
-    #                            specified timestep, and the second constraint prevents the second agent to be at the
-    #                            specified location at the specified timestep.
-    #           Edge collision: the first constraint prevents the first agent to traverse the specified edge at the
-    #                          specified timestep, and the second constraint prevents the second agent to traverse the
-    #                          specified edge at the specified timestep
     constraints = []
     # vertex collision 
     if(len(collision['loc']) == 1):
@@ -68,15 +51,6 @@ def standard_splitting(collision):
 
 
 def disjoint_splitting(collision):
-    ##############################
-    # Task 4.2: Return a list of (two) constraints to resolve the given collision
-    #           Vertex collision: the first constraint enforces one agent to be at the specified location at the
-    #                            specified timestep, and the second constraint prevents the same agent to be at the
-    #                            same location at the timestep.
-    #           Edge collision: the first constraint enforces one agent to traverse the specified edge at the
-    #                          specified timestep, and the second constraint prevents the same agent to traverse the
-    #                          specified edge at the specified timestep
-    #           Choose the agent randomly
     constraints = []
     agent = random.randint(0,1)
     agent = list(collision.values())[agent]
@@ -162,7 +136,7 @@ class CBSSolver(object):
         # Find initial path for each agent
         for i in range(self.num_of_agents):  
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
-                          i, root['constraints'])
+                          i, 1, root['constraints'])
             if path is None:
                 raise BaseException('No solutions')
             root['paths'].append(path)
@@ -198,7 +172,7 @@ class CBSSolver(object):
                 # find new path for constraint agent
                 agent = constraint['agent']
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
-                        agent, Q['constraints']) 
+                        agent, 1, Q['constraints']) 
                 Q['paths'][agent] = path 
                 
                 # find new path for violating agents
@@ -213,7 +187,7 @@ class CBSSolver(object):
                         Q['constraints'] = Q['constraints'] + [new_constraint]
                         # calculating new path for violating agent
                         new_path = a_star(self.my_map, self.starts[violating_agent], self.goals[violating_agent], self.heuristics[violating_agent],
-                                violating_agent, Q['constraints'])    
+                                violating_agent, 1, Q['constraints'])    
                         Q['paths'][violating_agent] = new_path   
 
                 # push child node if all paths exist 
