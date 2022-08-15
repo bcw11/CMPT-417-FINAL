@@ -52,36 +52,51 @@ def standard_splitting(collision):
         constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
     return constraints
 
+# def get_euclidean_space(self,collision):
+#     return collision
+
 def sym_splitting(self, collision):
     constraints = []
+    
+    # euclidean_points = get_euclidean_space(self,collision)
+
+
     # vertex collision 
-    #Do sym splitting
+    # Do sym splitting
     # Select a point and prevent any point which could lead to touhcing it
     if(len(collision['loc']) == 1):
 
-        agent1 = collision['a1']
-        size1 = self.sizes[agent1]
+        a1_constraints = []
+        a2_constraints = []
 
-        agent2 = collision['a2']
-        size2 = self.sizes[agent2]
+        a1 = collision['a1']
+        a2 = collision['a2']
 
-        loc = collision['loc']
+        x_bound = collision['loc'][0] - self.sizes[a1] - 1
+        y_bound = collision['loc'][1] - self.sizes[a1] - 1
 
-        i = loc[0]
-        j = loc[1]
+        x = collision['loc'][0]
+        y = collision['loc'][1]
 
-        while(i > loc[0] - size1):
-            while(j > loc[1] - size1):
-                constraints.append({'agent':collision['a1'],'loc':(i,j),'timestep':collision['timestep'],'positive':False})
-                j = j -1
-            i = i -1
+        while(x >= x_bound):
+            while(y >= y_bound):
+                a1_constraints.append({'agent':collision['a1'],'loc':(x,y),'timestep':collision['timestep'],'positive':False})
+                y = y -1
+            x = x -1
         
-        while(i > loc[0] - size2):
-            while(j > loc[1] - size2):
-                constraints.append({'agent':collision['a2'],'loc':(i,j),'timestep':collision['timestep'],'positive':False})
-                j = j -1
-            i = i -1
-    
+        x_bound = collision['loc'][0] - self.sizes[a2] - 1
+        y_bound = collision['loc'][1] - self.sizes[a2] - 1
+
+        while(x >= x_bound):
+            while(y >= y_bound):
+                a2_constraints.append({'agent':collision['a2'],'loc':(x,y),'timestep':collision['timestep'],'positive':False})
+                y = y -1
+            x = x -1
+
+        constraints.append(a1_constraints)
+        constraints.append(a2_constraints)    
+        return constraints
+
     # edge collision 
     #Only 1x1 so leave untouched
     else:
@@ -207,13 +222,14 @@ class MCCBSSolver(object):
             if(disjoint):
                 constraints = disjoint_splitting(collision)
             else:
-                constraints = standard_splitting(collision)
+                constraints = sym_splitting(self,collision)
+                # constraints = standard_splitting(collision)
 
             # print_node(P)
 
             # applying constraints child paths
+            # note: constraints is a set of constraints for each agent
             for constraint in constraints:
-
                 # creating child node 
                 if(constraint in P['constraints']):
                     continue
