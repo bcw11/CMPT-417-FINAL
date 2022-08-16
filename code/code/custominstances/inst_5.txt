@@ -13,4 +13,5 @@
 1 6 6 8 1
 3 2 4 10 3
 
-Solvable as of August 14th.
+standard: 3327/5886
+symsplit: 916/1830

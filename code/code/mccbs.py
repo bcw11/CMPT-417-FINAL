@@ -178,14 +178,14 @@ class MCCBSSolver(object):
  
     def push_node(self, node):
         heapq.heappush(self.open_list, (node['cost'], len(node['collisions']), self.num_of_generated, node))
-        # if(self.num_of_generated%1000 == 0):
-        print("Generate node {}".format(self.num_of_generated))
+        if(self.num_of_generated%1000 == 0):
+            print("Generate node {}".format(self.num_of_generated))
         self.num_of_generated += 1
  
     def pop_node(self):
         _, _, id, node = heapq.heappop(self.open_list)
-        # if(self.num_of_expanded%1000 == 0):
-        print("Expand node {}".format(id))
+        if(self.num_of_expanded%1000 == 0):
+            print("Expand node {}".format(id))
         self.num_of_expanded += 1
         return node
  
@@ -209,9 +209,9 @@ class MCCBSSolver(object):
         # High-Level Search
         ##############################
         while(len(self.open_list) > 0):
-            print("\n")
+            # print("\n")
             P = self.pop_node() 
-            print("P collision:",P['collisions'])
+            # print("P collision:",P['collisions'])
  
             # found goal node 
             if len(P['collisions']) == 0:
@@ -262,14 +262,14 @@ class MCCBSSolver(object):
                     Q['collisions'] = detect_collisions(Q['paths'],self.sizes)
                     Q['cost'] = get_sum_of_cost(Q['paths'])
                     self.push_node(Q)
-                    print("Q cost:",Q['cost'])
-                    print("Q collision:",Q['collisions'])
-                    print("Q constraints")
-                    print_constraint_set(Q['constraints'])
-                    print("A0 path",Q['paths'][0])
-                    print("A1 path",Q['paths'][1])
-                    print("A2 path",Q['paths'][2])
-                    print("\n")
+                    # print("Q cost:",Q['cost'])
+                    # print("Q collision:",Q['collisions'])
+                    # print("Q constraints")
+                    # print_constraint_set(Q['constraints'])
+                    # print("A0 path",Q['paths'][0])
+                    # print("A1 path",Q['paths'][1])
+                    # print("A2 path",Q['paths'][2])
+                    # print("\n")
         self.print_results(root)
         return root['paths']
  
