@@ -13,8 +13,9 @@ def detect_collision(path1,path2,sizes):
         # finding vertex collisions 
         for loc in node1:
             if(loc in node2):
-                # note: returns top left location 
-                return {'loc':[node1[0]],'timestep':t}
+                # note: returns location of collision
+                #######
+                return {'loc':[loc],'timestep':t}
         # finding edge collisions
         # note: edge collisions only occur only between 1x1 agents 
         if(t > 0):
@@ -51,6 +52,53 @@ def standard_splitting(collision):
         constraints.append({'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
         constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
     return constraints
+
+def print_constraints(constraints):
+    for set in constraints:
+        for constraint in set:
+            print("a:",constraint['agent'],"loc:",constraint['loc'],"t:",constraint['timestep'])
+
+def print_constraint_set(constraints):
+    for constraint in constraints:
+        print("a:",constraint['agent'],"loc:",constraint['loc'],"t:",constraint['timestep'])
+
+
+def sym_splitting(self, collision, old_constraints):
+    if(len(collision['loc']) == 1):
+        a1 = collision['a1']
+        a2 = collision['a2']
+        a1_constraints = []
+        a2_constraints = []
+        collision_loc = collision['loc'][0]
+        x_bound = collision_loc[0] - (self.sizes[a1]) 
+        y_bound = collision_loc[1] - (self.sizes[a1]) 
+
+        # constraints for a1
+        for x in range(collision_loc[0],x_bound,-1):
+            for y in range(collision_loc[1],y_bound,-1):
+                c = {'agent':a1,'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
+                if c not in old_constraints:
+                    a1_constraints.append(c)
+        x_bound = collision_loc[0] - (self.sizes[a2])
+        y_bound = collision_loc[1] - (self.sizes[a2])
+        # constraints for a2
+        for x in range(collision_loc[0],x_bound,-1):
+            for y in range(collision_loc[1],y_bound,-1):
+                c = {'agent':a2,'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
+                if c not in old_constraints:
+                    a2_constraints.append(c)
+        # print("\n")
+    # edge collision (only for 1x1 agents)
+    else:
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a1_constraints = [c]
+        c = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a2_constraints = [c]
+    return [a1_constraints,a2_constraints]
 
 
 # splits collision into one random and one positive constraint 
@@ -130,11 +178,13 @@ class MCCBSSolver(object):
 
     def push_node(self, node):
         heapq.heappush(self.open_list, (node['cost'], len(node['collisions']), self.num_of_generated, node))
+        # if(self.num_of_generated%1000 == 0):
         print("Generate node {}".format(self.num_of_generated))
         self.num_of_generated += 1
 
     def pop_node(self):
         _, _, id, node = heapq.heappop(self.open_list)
+        # if(self.num_of_expanded%1000 == 0):
         print("Expand node {}".format(id))
         self.num_of_expanded += 1
         return node
@@ -161,37 +211,46 @@ class MCCBSSolver(object):
         while(len(self.open_list) > 0):
             P = self.pop_node() 
             # found goal node 
+            # print("NUM of collisions",len(P['collisions']))
+            # print("P collisions",P['collisions'])
             if len(P['collisions']) == 0:
                 self.print_results(P)
+                #print_constraint_set(P['constraints'])
                 return P['paths']
             # getting list of constraints
             collision = P['collisions'][0]
             if(disjoint):
                 constraints = disjoint_splitting(collision)
             else:
-                constraints = standard_splitting(collision)
+                constraints = sym_splitting(self,collision, P['constraints'])
+                # constraints = standard_splitting(collision)
 
             # print_node(P)
-
-            # applying constraints child paths
             for constraint in constraints:
+                if(constraint == []):
+                    print("constraint skipped ")
+                    continue
 
                 # creating child node 
-                if(constraint in P['constraints']):
-                    continue
                 Q = {'cost': 0,
-                    'constraints': P['constraints'].copy() + [constraint],
+                    'constraints': P['constraints'].copy() + constraint,
                     'paths': P['paths'].copy(),
                     'collisions': []}
                 
                 # find new path for constraint agent
-                agent = constraint['agent']
+                agent = constraint[0]['agent']
+                print("collision:",collision)
+                print("Q constraints")
+                print_constraint_set(Q['constraints'])
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                         agent, self.sizes[agent], Q['constraints']) 
                 Q['paths'][agent] = path 
+                print("Q path",Q['paths'][0])
+                print("Q path",Q['paths'][1])
                 
                 # find new path for violating agents
-                if(constraint['positive'] == True):
+                # note: quick fix not final (constraint[0]['positive'] == True)
+                if(disjoint):
                     violating_agents = paths_violate_constraint(constraint,Q['paths'],self.sizes)
                     for violating_agent in violating_agents:
                         # creating new negative constraint for violating agent
@@ -209,8 +268,8 @@ class MCCBSSolver(object):
                 if(not None in Q['paths']):
                     Q['collisions'] = detect_collisions(Q['paths'],self.sizes)
                     Q['cost'] = get_sum_of_cost(Q['paths'])
-                    # print_node(Q)
                     self.push_node(Q)
+                    print("\n")
         self.print_results(root)
         return root['paths']
 

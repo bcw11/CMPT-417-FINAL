@@ -131,7 +131,6 @@ def get_coords(loc, size):
 # checking bounds of board for 2x2 agent
 def sized_out_of_bounds(loc, my_map, size):
     coords = get_coords(loc,size)
-
     for coord in coords:
         if my_map[coord[0]][coord[1]] or out_of_bounds(coord,my_map):
             return True
@@ -157,6 +156,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, size, constraints):
     push_node(open_list, root)
     closed_list[(root['loc'],root['timestep'])] = root
     
+
     while len(open_list) > 0:
         curr = pop_node(open_list)
         
@@ -168,12 +168,13 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, size, constraints):
 
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
-
-            # checking if child location is out of bounds of map
-            if out_of_bounds(child_loc,my_map) or my_map[child_loc[0]][child_loc[1]]:
-                continue
+            
+            # checking for unit sized agents out of bounds 
+            if size == 1:
+                if out_of_bounds(child_loc,my_map) or my_map[child_loc[0]][child_loc[1]]:
+                    continue
             # checking if 2x2 agent is out of bounds of map
-            if size > 1:
+            else:
                 if sized_out_of_bounds(child_loc,my_map,size):
                     continue
             
@@ -197,5 +198,4 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, size, constraints):
             else:
                 closed_list[(child['loc'],child['timestep'])] = child
                 push_node(open_list, child)
-
     return None  # Failed to find solutions
