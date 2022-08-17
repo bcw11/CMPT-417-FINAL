@@ -46,82 +46,44 @@ class PrioritizedPlanningSolver(object):
             #            * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
             #            * self.num_of_agents has the number of total agents
             #            * constraints: array of constraints to consider for future A* searches
+            path_size = self.sizes[i]
             for agent in range(self.num_of_agents):
-                print("Adding constraints for agent " + str(agent) + " based on the path of agent " + str(i))
+                # print("Adding constraints for agent " + str(agent) + " based on the path of agent " + str(i))
+                agent_size = self.sizes[agent]
                 for t in range(len(path)):
+                    locations = []
+                    top_left = list(path[t])
                     if agent != i:
-                        if self.sizes[i] > 1:
-                            print("Forming constraints based on the path of a large agent.")
-                            # for the path of a 2x2 agent, the following must be constrained:
-                            # [loc][   ]
-                            # [   ][   ]
-                            top_left = list(path[t])
-                            top_right = [top_left[0], top_left[1] + 1]
-                            bot_left = [top_left[0] + 1, top_left[1]]
-                            bot_right = [top_left[0] + 1, top_left[1] + 1]
-                            cells_of_2x2_agent = [top_left, top_right, bot_left, bot_right]
-                            print("Agent " + str(i) + " is big and touches "
-                                  + str(top_left) + ", "
-                                  + str(top_right) + ", "
-                                  + str(bot_left) + ", "
-                                  + str(bot_right) + " at time " + str(t) + ".")
-                            print("Adding the following constraints for agent " + str(agent) + ":")
-                            for coordinates in cells_of_2x2_agent:
-                                constraint = {'agent': agent, 'loc': [tuple(coordinates)], 'timestep': t, 'positive': False}
-                                print(constraint)
-                                constraints.append(constraint)
-                                # If we are forming constraints for a 2x2 agent, then it must not be in such a position
-                                # that it would touch any constrained cells, i.e.
-                                # [loc][   ]            [] = agent 'agent'
-                                # [   ]{loc}{   }       {} = agent 'i'
-                                #      {   }{   }
-                                # or
-                                # [loc]{loc}{   }
-                                # [   ]{   }{   }
-                                if self.sizes[agent] > 1:
-                                    print("Forming constraints between two 2x2 agents.")
-                                    above = [coordinates[0], max(0, coordinates[1] - 1)]
-                                    left = [max(0, coordinates[0] - 1), coordinates[1]]
-                                    above_and_left = [max(0, coordinates[0] - 1), max(0, coordinates[1] - 1)]
-                                    cells_of_other_2x2_agent = [above, left, above_and_left]
-                                    for cell in cells_of_other_2x2_agent:
-                                        constraint = {'agent': agent, 'loc': [tuple(cell)], 'timestep': t, 'positive': False}
-                                        print(constraint)
-                                        constraints.append(constraint)
-                            # #print("Constraints after finding a big agent:", constraints)
-                        elif self.sizes[i] > 2:
-                            # This is where the absolute travesty that handling 3x3 agents would go
-                            continue
-                        elif self.sizes[i] == 1:
-                            vertex_constraint = {'agent': agent, 'loc': [path[t]], 'timestep': t, 'positive': False}
-                            if self.sizes[agent] > 1:
-                                # If we are forming constraints for a 2x2 agent, then it must not be in such a position
-                                # that it would touch any constrained cells, i.e.
-                                # [loc][   ]            [] = agent 'agent'
-                                # [   ]{loc}            {} = agent 'i'
-                                # or
-                                # [loc]{loc}
-                                # [   ][   ]
-                                location = list(path[t])
-                                above = [location[0], max(0, location[1] - 1)]
-                                left = [max(0, location[0] - 1), location[1]]
-                                above_and_left = [max(0, location[0] - 1), max(0, location[1] - 1)]
-                                cells_of_other_2x2_agent = [above, left, above_and_left]
-                                for cell in cells_of_other_2x2_agent:
-                                    constraint = {'agent': agent, 'loc': [tuple(cell)], 'timestep': t,
-                                                  'positive': False}
-                                    print(constraint)
-                                    constraints.append(constraint)
-                            constraints.append(vertex_constraint)
-                            if t == len(path) - 1:
-                                vertex_constraint = {'agent': agent, 'loc': [path[t]], 'timestep': -1, 'positive': False}
-                                constraints.append(vertex_constraint)
+                        for x in range(0, path_size):
+                            for y in range(0, path_size):
+                                locations.append(tuple([top_left[0] + x, top_left[1] + y]))
+                        # print("Locations to be constrained based on this path, at time " + str(t) + ": " + str(locations))
+                        if agent_size == 1:
+                            # print("Forming constraints for a 1x1 agent.")
+                            # print("At time " + str(t) + " this agent cannot occupy:")
+                            for location in locations:
+                                # print(location)
+                                constraints.append({'agent': agent, 'loc': [location], 'timestep': t, 'positive': False})
                             if t > 0:
                                 edge_constraint = {'agent': agent, 'loc': [path[t], path[t - 1]], 'timestep': t, 'positive': False}
                                 constraints.append(edge_constraint)
+                            if t == len(path) - 1:
+                                vertex_constraint = {'agent': agent, 'loc': [path[t]], 'timestep': -1, 'positive': False}
+                                constraints.append(vertex_constraint)
+                        elif agent_size > 1:
+                            # print("Forming constraints for a 2x2 or larger agent.")
+                            for location in locations:
+                                # print("In order to avoid " + str(location) + ", this agent must not be in")
+                                for x in range(0, agent_size):
+                                    for y in range(0, agent_size):
+                                        coordinates = tuple([max(0, location[0] - x), max(0, location[1] - y)])
+                                        # print(coordinates)
+                                        constraint = {'agent': agent, 'loc': [coordinates], 'timestep': t, 'positive': False}
+                                        #print("Adding the following constraint: " + str(constraint))
+                                        constraints.append(constraint)
 
             # recalculating paths based on generated constraints
-            print("Invoking a_star with the following constraints:" + str(constraints))
+            # print("Invoking a_star with the following constraints:" + str(constraints))
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i], i, self.sizes[i], constraints)
             if path is None:
                 raise BaseException('No solutions')
