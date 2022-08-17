@@ -15,3 +15,4 @@
 
 standard: 3327/5886
 symsplit: 916/1830
+asymsplit: 1475/2948

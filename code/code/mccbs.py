@@ -3,7 +3,7 @@ from re import A
 import time as timer
 import heapq
 import random
-from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
+from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost, get_coords
  
 # detects a single collision between paths 
 def detect_collision(path1,path2,sizes):
@@ -15,7 +15,7 @@ def detect_collision(path1,path2,sizes):
             if(loc in node2):
                 # note: returns location of collision
                 #######
-                return {'loc':[loc],'timestep':t}
+                return {'loc':[loc,node1[0],node2[0]],'timestep':t}
         # finding edge collisions
         # note: edge collisions only occur only between 1x1 agents 
         if(t > 0):
@@ -42,7 +42,7 @@ def detect_collisions(paths,sizes):
 def standard_splitting(collision):
     constraints = []
     # vertex collision 
-    if(len(collision['loc']) == 1):
+    if(len(collision['loc']) == 3):
         constraints.append({'agent':collision['a1'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
         constraints.append({'agent':collision['a2'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
     # edge collision 
@@ -63,8 +63,49 @@ def print_constraint_set(constraints):
         print("a:",constraint['agent'],"loc:",constraint['loc'],"t:",constraint['timestep'])
  
  
+def asym_splitting(self,collision,old_constraints):
+    if(len(collision['loc']) == 3):
+        a1 = collision['a1']
+        a2 = collision['a2']
+        a1_loc = collision['loc'][1]
+        a2_loc = collision['loc'][2]
+        a1_constraints = []
+        a2_constraints = []
+        collision_loc = collision['loc'][0]
+
+        x_bound = collision_loc[0] - (self.sizes[a2]) 
+        y_bound = collision_loc[1] - (self.sizes[a2]) 
+ 
+        # constraints for a1
+        c = {'agent':a1,'loc':[a1_loc],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a1_constraints.append(c)
+        # constraints for a2
+        #a2 is not allowed to be at any vertex where it can collide with a1
+        a1coords = get_coords(a1_loc,self.sizes[a1])
+
+        for coord in a1coords:
+            for x in range(coord[0],x_bound,-1):
+                for y in range(coord[1],y_bound,-1):
+                    c = {'agent':a2,'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
+                    if c not in old_constraints:
+                        a2_constraints.append(c)
+        # print("\n")
+    # edge collision (only for 1x1 agents)
+    else:
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a1_constraints = [c]
+        c = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            a2_constraints = [c]
+    return [a1_constraints,a2_constraints]
+
+
 def sym_splitting(self, collision, old_constraints):
-    if(len(collision['loc']) == 1):
+    if(len(collision['loc']) == 3):
         a1 = collision['a1']
         a2 = collision['a2']
         a1_constraints = []
@@ -107,7 +148,7 @@ def disjoint_splitting(collision):
     agent = random.randint(0,1)
     agent = list(collision.values())[agent]
     # vertex collision 
-    if(len(collision['loc']) == 1):
+    if(len(collision['loc']) == 3):
         constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
         constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':True})
     # edge collision 
@@ -222,7 +263,7 @@ class MCCBSSolver(object):
             if(disjoint):
                 constraints = disjoint_splitting(collision)
             else:
-                constraints = sym_splitting(self,collision, P['constraints'])
+                constraints = asym_splitting(self,collision, P['constraints'])
                 # constraints = standard_splitting(collision)
  
             for constraint in constraints:

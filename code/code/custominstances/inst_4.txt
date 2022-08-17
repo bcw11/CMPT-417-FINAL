@@ -15,3 +15,4 @@
 
 standard: (no solution, over 2mil nodes)
 symsplit: 1767/3511
+asymsplit: 74988/149828
