@@ -80,20 +80,27 @@ def build_constraint_table(constraints, agent):
 def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     if(next_time in constraint_table):
         for constraint in constraint_table[next_time]:
-            # vertex constraints
-            if(len(constraint['loc']) == 1):
-                if(constraint['loc'][0] == next_loc and constraint['positive'] == False):
-                    return True
-                elif(constraint['loc'][0] != next_loc and constraint['positive'] == True):
-                    return True
-            # edge constraints
+            # positive constraint 
+            if(constraint['positive']):
+                # vertex constraint
+                if(len(constraint['loc']) == 1):
+                    if(constraint['loc'][0] != next_loc):
+                        return True
+                # edge constraint
+                else:
+                    if(constraint['loc'][0] != curr_loc or constraint['loc'][1] != next_loc):
+                        return True 
+            # negative constraint
             else:
-                if(constraint['loc'][0] == curr_loc and constraint['loc'][1] == next_loc and constraint['positive'] == False):
-                    return True
-                elif((constraint['loc'][0] != curr_loc or constraint['loc'][1] != next_loc) and constraint['positive'] == True):
-                    return True
-                
-    # checking for agents that have reached goal node
+                # vertex constraint
+                if(len(constraint['loc']) == 1):
+                    if(constraint['loc'][0] == next_loc):
+                        return True
+                # edge constraint
+                else:
+                    if(constraint['loc'][0] == curr_loc and constraint['loc'][1] == next_loc):
+                        return True 
+    # 2.3 checking for additional constraints (agents that have reached goal node)
     if(-1 in constraint_table):
         for constraint in constraint_table[-1]:
             if next_loc == constraint['loc'][0]:

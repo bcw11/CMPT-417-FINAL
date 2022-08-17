@@ -4,6 +4,7 @@ import glob
 from pathlib import Path
 from cbs import CBSSolver
 from mccbs import MCCBSSolver
+from mccbs_ds import MCCBS_dsSolver
 from independent import IndependentSolver
 from prioritized import PrioritizedPlanningSolver
 from visualize import Animation
@@ -119,6 +120,10 @@ if __name__ == '__main__':
             print("***Run MCCBS***")
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
             paths = mccbs.find_solution(args.disjoint)
+        elif args.solver == "MCCBS_ds":
+            print("***Run MCCBS(ds)***")
+            mccbs_ds = MCCBS_dsSolver(my_map, starts, goals, sizes)
+            paths = mccbs_ds.find_solution(args.disjoint)
         elif args.solver == "Independent":
             print("***Run Independent***")
             solver = IndependentSolver(my_map, starts, goals, sizes)
@@ -131,7 +136,7 @@ if __name__ == '__main__':
             raise RuntimeError("Unknown solver!")
 
         cost = get_sum_of_cost(paths)
-        # result_file.write("{},{} | {},{}\n".format(file, cost,cbs.num_of_expanded,cbs.num_of_generated))
+        # result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs.num_of_expanded,mccbs.num_of_generated))
         result_file.write("{},{}\n".format(file, cost))
 
 

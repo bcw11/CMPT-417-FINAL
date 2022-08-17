@@ -13,8 +13,8 @@ def detect_collision(path1,path2,sizes):
         # finding vertex collisions 
         for loc in node1:
             if(loc in node2):
-                # note: returns location of collision
-                #######
+                # note: [location of collision, reference to agent 1, reference to agent 2]
+                ####### 
                 return {'loc':[loc,node1[0],node2[0]],'timestep':t}
         # finding edge collisions
         # note: edge collisions only occur only between 1x1 agents 
@@ -39,18 +39,30 @@ def detect_collisions(paths,sizes):
  
  
 # splits collision into two negative constraints 
-def standard_splitting(collision):
+def standard_splitting(collision,old_constraints):
     constraints = []
     # vertex collision 
     if(len(collision['loc']) == 3):
-        constraints.append({'agent':collision['a1'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
-        constraints.append({'agent':collision['a2'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
+        c = {'agent':collision['a1'],'loc':[collision['loc'][1]],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        c = {'agent':collision['a2'],'loc':[collision['loc'][2]],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        # constraints.append([{'agent':collision['a1'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False}])
+        # constraints.append([{'agent':collision['a2'],'loc':collision['loc'],'timestep':collision['timestep'],'positive':False}])
     # edge collision 
     else:
         loc1 = collision['loc'][0]
         loc2 = collision['loc'][1]
-        constraints.append({'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
-        constraints.append({'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
+        c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        c = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        # constraints.append([{'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}])
+        # constraints.append([{'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}])
     return constraints
  
 def print_constraints(constraints):
@@ -143,25 +155,25 @@ def sym_splitting(self, collision, old_constraints):
  
  
 # splits collision into one random and one positive constraint 
-def disjoint_splitting(collision):
-    constraints = []
-    agent = random.randint(0,1)
-    agent = list(collision.values())[agent]
-    # vertex collision 
-    if(len(collision['loc']) == 3):
-        constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
-        constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':True})
-    # edge collision 
-    else:
-        loc1 = collision['loc'][0]
-        loc2 = collision['loc'][1]
-        if(agent == collision['a1']):
-            constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
-            constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':True})
-        else:
-            constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
-            constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':True})
-    return constraints
+# def disjoint_splitting(collision):
+#     constraints = []
+#     agent = random.randint(0,1)
+#     agent = list(collision.values())[agent]
+#     # vertex collision 
+#     if(len(collision['loc']) == 3):
+#         constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
+#         constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':True})
+#     # edge collision 
+#     else:
+#         loc1 = collision['loc'][0]
+#         loc2 = collision['loc'][1]
+#         if(agent == collision['a1']):
+#             constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
+#             constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':True})
+#         else:
+#             constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
+#             constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':True})
+#     return constraints
  
  
 # computes list of agents that violate a given positive constraint 
@@ -252,6 +264,9 @@ class MCCBSSolver(object):
         while(len(self.open_list) > 0):
             # print("\n")
             P = self.pop_node() 
+            # print("P paths:")
+            # for i in range(len(P['paths'])):
+            #     print("\t",i,"path",P['paths'][i])
             # print("P collision:",P['collisions'])
  
             # found goal node 
@@ -261,10 +276,10 @@ class MCCBSSolver(object):
             # getting list of constraints
             collision = P['collisions'][0]
             if(disjoint):
-                constraints = disjoint_splitting(collision)
+                constraints = sym_splitting(self,collision, P['constraints'])
             else:
                 constraints = asym_splitting(self,collision, P['constraints'])
-                # constraints = standard_splitting(collision)
+                # constraints = standard_splitting(collision, P['constraints'])
  
             for constraint in constraints:
                 if(constraint == []):
@@ -304,13 +319,12 @@ class MCCBSSolver(object):
                     Q['cost'] = get_sum_of_cost(Q['paths'])
                     self.push_node(Q)
                     # print("Q cost:",Q['cost'])
-                    # print("Q collision:",Q['collisions'])
-                    # print("Q constraints")
+                    # print("Q constraints:")
                     # print_constraint_set(Q['constraints'])
-                    # print("A0 path",Q['paths'][0])
-                    # print("A1 path",Q['paths'][1])
-                    # print("A2 path",Q['paths'][2])
-                    # print("\n")
+                    # print("Q paths:")
+                    # for i in range(len(Q['paths'])):
+                    #     print("\t",i,"path",Q['paths'][i])
+                    # print("Q collision:",Q['collisions'])
         self.print_results(root)
         return root['paths']
  
