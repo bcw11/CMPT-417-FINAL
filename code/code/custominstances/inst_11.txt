@@ -14,4 +14,7 @@
 3 2 4 10 3
 
 standard: (no solution within 100k nodes)
+disjoint:
+
 symsplit: 4830/9658
+asymsplit:

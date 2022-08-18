@@ -113,7 +113,6 @@ def sym_splitting(self, collision, old_constraints):
                 c = {'agent':a2,'loc':[(x,y)],'timestep':collision['timestep'],'positive':False}
                 if c not in old_constraints:
                     a2_constraints.append(c)
-        # print("\n")
     # edge collision (only for 1x1 agents)
     else:
         loc1 = collision['loc'][0]
@@ -260,6 +259,7 @@ class MCCBSSolver(object):
                     # for i in range(len(Q['paths'])):
                     #     print("\t",i,"path",Q['paths'][i])
                     # print("Q collision:",Q['collisions'])
+        print("Root solution")
         self.print_results(root)
         return root['paths']
  

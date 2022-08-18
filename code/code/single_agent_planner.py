@@ -177,13 +177,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, size, constraints):
             child_loc = move(curr['loc'], dir)
             
             # checking for unit sized agents out of bounds 
-            if size == 1:
-                if out_of_bounds(child_loc,my_map) or my_map[child_loc[0]][child_loc[1]]:
-                    continue
-            # checking if 2x2 agent is out of bounds of map
-            else:
-                if sized_out_of_bounds(child_loc,my_map,size):
-                    continue
+            if sized_out_of_bounds(child_loc,my_map,size):
+                continue
             
             # child node
             child = {'loc': child_loc,
