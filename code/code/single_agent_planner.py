@@ -139,7 +139,7 @@ def get_coords(loc, size):
 def sized_out_of_bounds(loc, my_map, size):
     coords = get_coords(loc,size)
     for coord in coords:
-        if my_map[coord[0]][coord[1]] or out_of_bounds(coord,my_map):
+        if out_of_bounds(coord,my_map) or my_map[coord[0]][coord[1]]:
             return True
     return False
 

@@ -136,8 +136,12 @@ if __name__ == '__main__':
             raise RuntimeError("Unknown solver!")
 
         cost = get_sum_of_cost(paths)
-        # result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs.num_of_expanded,mccbs.num_of_generated))
-        result_file.write("{},{}\n".format(file, cost))
+        if(args.solver == "MCCBS"):
+            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs.num_of_expanded,mccbs.num_of_generated))
+        elif(args.solver == "MCCBS_ds"):
+            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs_ds.num_of_expanded,mccbs_ds.num_of_generated))
+        else:
+            result_file.write("{}:\t{} | \n".format(file, cost))
 
 
         if not args.batch:

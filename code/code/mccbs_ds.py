@@ -50,8 +50,8 @@ def standard_splitting(collision,old_constraints):
             constraints.append([c])
     # edge collision 
     else:
-        loc1 = collision['loc'][1][0]
-        loc2 = collision['loc'][1][1]
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
         c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
         if c not in old_constraints:
             constraints.append([c])
@@ -76,8 +76,8 @@ def disjoint_splitting(self, collision, old_constraints):
             constraints.append([c])
     # edge collision 
     else:
-        loc1 = collision['loc'][i][0]
-        loc2 = collision['loc'][i][1]
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
         if(agent == collision['a1']):
             c = {'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
             if c not in old_constraints:
@@ -94,31 +94,14 @@ def disjoint_splitting(self, collision, old_constraints):
                 constraints.append([c])
     return constraints
 
-    # constraints = []
-    # agent = random.randint(0,1)
-    # agent = list(collision.values())[agent]
-    # # vertex collision 
-    # if(len(collision['loc']) == 1):
-    #     constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':False})
-    #     constraints.append({'agent':agent,'loc':collision['loc'],'timestep':collision['timestep'],'positive':True})
-    # # edge collision 
-    # else:
-    #     loc1 = collision['loc'][0]
-    #     loc2 = collision['loc'][1]
-    #     if(agent == collision['a1']):
-    #         constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False})
-    #         constraints.append({'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':True})
-    #     else:
-    #         constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False})
-    #         constraints.append({'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':True})
-    # return constraints
-
+# SYM DISJOINT SPLITTING
     # i = random.randint(0,1)
+    # i = 0
     # agent = list(collision.values())[i]
+    # neg_constraints = []
+    # pos_constraints = []
     # if(len(collision['loc']) == 3):
     #     agent_loc = collision['loc'][i+1]
-    #     neg_constraints = []
-    #     pos_constraints = []
     #     collision_loc = collision['loc'][0]
     #     x_bound = collision_loc[0] - (self.sizes[agent]) 
     #     y_bound = collision_loc[1] - (self.sizes[agent]) 
@@ -133,8 +116,8 @@ def disjoint_splitting(self, collision, old_constraints):
     #         pos_constraints.append(c)
     # # edge collision (only for 1x1 agents)
     # else:
-    #     loc1 = collision['loc'][i][0]
-    #     loc2 = collision['loc'][i][1]
+    #     loc1 = collision['loc'][0]
+    #     loc2 = collision['loc'][1]
     #     if(agent == collision['a1']):
     #         c = {'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
     #         if c not in old_constraints:
@@ -211,14 +194,14 @@ class MCCBS_dsSolver(object):
 
     def push_node(self, node):
         heapq.heappush(self.open_list, (node['cost'], len(node['collisions']), self.num_of_generated, node))
-        if(self.num_of_generated%1000 == 0):
-            print("Generate node {}".format(self.num_of_generated))
+        # if(self.num_of_generated%1000 == 0):
+        print("Generate node {}".format(self.num_of_generated))
         self.num_of_generated += 1
 
     def pop_node(self):
         _, _, id, node = heapq.heappop(self.open_list)
-        if(self.num_of_expanded%1000 == 0):
-            print("Expand node {}".format(id))
+        # if(self.num_of_expanded%1000 == 0):
+        print("Expand node {}".format(id))
         self.num_of_expanded += 1
         return node
 
@@ -252,7 +235,7 @@ class MCCBS_dsSolver(object):
             # found goal node 
             if len(P['collisions']) == 0:
                 self.print_results(P)
-                print("P constraints",P['constraints'])
+                print_constraint_set(P['constraints'])
                 return P['paths']
             # getting list of constraints
             collision = P['collisions'][0]
@@ -262,14 +245,12 @@ class MCCBS_dsSolver(object):
                 constraints = standard_splitting(collision, P['constraints'])
 
             # applying constraints child paths
+            # random.shuffle(constraints)
             for constraint in constraints:
                 # print("\nconstraint:",constraint)
                 # creating child node 
-                # if(constraint in P['constraints']):
-                #     print(" node: duplicate")
-                #     continue
                 if(constraint == []):
-                    # print(" node: duplicate")
+                    print(" node: duplicate")
                     continue
                 Q = {'cost': 0,
                     'constraints': P['constraints'].copy() + constraint,
@@ -282,16 +263,16 @@ class MCCBS_dsSolver(object):
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                         agent, self.sizes[agent], Q['constraints']) 
                 Q['paths'][agent] = path 
-                
+
                 # find new path for violating agents
                 if(constraint[0]['positive'] == True):
-                    constraint = constraint[0]
-                    violating_agents = paths_violate_constraint(constraint,Q['paths'],self.sizes)
+                    # constraint = constraint[0]
+                    violating_agents = paths_violate_constraint(constraint[0],Q['paths'],self.sizes)
                     for violating_agent in violating_agents:
                         # creating new negative constraint for violating agent
-                        new_constraint = constraint.copy()
+                        new_constraint = constraint[0].copy()
                         new_constraint['agent'] = violating_agent
-                        new_constraint['loc'] = constraint['loc'][::-1]
+                        new_constraint['loc'] = constraint[0]['loc'][::-1]
                         new_constraint['positive'] = False
                         Q['constraints'] = Q['constraints'] + [new_constraint]
                         # calculating new path for violating agent
