@@ -113,27 +113,27 @@ if __name__ == '__main__':
         print_mapf_instance(my_map, starts, goals, sizes)
 
         if args.solver == "CBS":
-            result_file = open("cbs_results.csv", "w", buffering=1)
+            # result_file = open("cbs_results.csv", "w", buffering=1)
             print("***Run CBS***")
             cbs = CBSSolver(my_map, starts, goals)
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "MCCBS":
-            result_file = open("mccbs_results.csv", "w", buffering=1)
+            # result_file = open("mccbs_results.csv", "w", buffering=1)
             print("***Run MCCBS***")
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
             paths = mccbs.find_solution(args.disjoint)
         elif args.solver == "MCCBS_ds":
-            result_file = open("mccbs_ds_results.csv", "w", buffering=1)
+            # result_file = open("mccbs_ds_results.csv", "w", buffering=1)
             print("***Run MCCBS(ds)***")
             mccbs_ds = MCCBS_dsSolver(my_map, starts, goals, sizes)
             paths = mccbs_ds.find_solution(args.disjoint)
         elif args.solver == "Independent":
-            result_file = open("independent_results.csv", "w", buffering=1)
+            # result_file = open("independent_results.csv", "w", buffering=1)
             print("***Run Independent***")
             solver = IndependentSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
-            result_file = open("prioritized_results.csv", "a", buffering=1)
+            # result_file = open("prioritized_results.csv", "a", buffering=1)
             print("***Run Prioritized***")
             solver = PrioritizedPlanningSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()

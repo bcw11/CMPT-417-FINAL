@@ -178,13 +178,21 @@ class CBSSolver(object):
                 # find new path for violating agents
                 if(constraint['positive'] == True):
                     violating_agents = paths_violate_constraint(constraint,Q['paths'])
-                    for violating_agent in violating_agents:
+                    for ai in range(self.num_of_agents):
                         # creating new negative constraint for violating agent
                         new_constraint = constraint.copy()
-                        new_constraint['agent'] = violating_agent
+                        new_constraint['agent'] = ai
                         new_constraint['loc'] = constraint['loc'][::-1]
                         new_constraint['positive'] = False
                         Q['constraints'] = Q['constraints'] + [new_constraint]
+                    
+                    for violating_agent in violating_agents:
+                        # creating new negative constraint for violating agent
+                        # new_constraint = constraint.copy()
+                        # new_constraint['agent'] = violating_agent
+                        # new_constraint['loc'] = constraint['loc'][::-1]
+                        # new_constraint['positive'] = False
+                        # Q['constraints'] = Q['constraints'] + [new_constraint]
                         # calculating new path for violating agent
                         new_path = a_star(self.my_map, self.starts[violating_agent], self.goals[violating_agent], self.heuristics[violating_agent],
                                 violating_agent, 1, Q['constraints'])    

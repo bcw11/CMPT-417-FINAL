@@ -15,7 +15,7 @@
 
 (min cost: 39)
 standard: (no solution within 70k nodes)
-disjoint: 159/174 (optimal solution) - ~/~ (non optimal solution)
+disjoint: 7426/7540 (suboptimal: 50)
 
 symsplit: 2826/5637
 asymsplit:

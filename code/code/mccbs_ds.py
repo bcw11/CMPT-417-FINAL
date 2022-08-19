@@ -194,14 +194,14 @@ class MCCBS_dsSolver(object):
 
     def push_node(self, node):
         heapq.heappush(self.open_list, (node['cost'], len(node['collisions']), self.num_of_generated, node))
-        # if(self.num_of_generated%1000 == 0):
-        print("Generate node {}".format(self.num_of_generated))
+        if(self.num_of_generated%1000 == 0):
+            print("Generate node {}".format(self.num_of_generated))
         self.num_of_generated += 1
 
     def pop_node(self):
         _, _, id, node = heapq.heappop(self.open_list)
-        # if(self.num_of_expanded%1000 == 0):
-        print("Expand node {}".format(id))
+        if(self.num_of_expanded%1000 == 0):
+            print("Expand node {}".format(id))
         self.num_of_expanded += 1
         return node
 
@@ -268,13 +268,21 @@ class MCCBS_dsSolver(object):
                 if(constraint[0]['positive'] == True):
                     # constraint = constraint[0]
                     violating_agents = paths_violate_constraint(constraint[0],Q['paths'],self.sizes)
+                    for ai in range(self.num_of_agents):
+                        if(ai != agent):
+                        # creating new negative constraint for violating agent
+                            new_constraint = constraint[0].copy()
+                            new_constraint['agent'] = ai
+                            new_constraint['loc'] = constraint[0]['loc'][::-1]
+                            new_constraint['positive'] = False
+                            Q['constraints'] = Q['constraints'] + [new_constraint]
                     for violating_agent in violating_agents:
                         # creating new negative constraint for violating agent
-                        new_constraint = constraint[0].copy()
-                        new_constraint['agent'] = violating_agent
-                        new_constraint['loc'] = constraint[0]['loc'][::-1]
-                        new_constraint['positive'] = False
-                        Q['constraints'] = Q['constraints'] + [new_constraint]
+                        # new_constraint = constraint[0].copy()
+                        # new_constraint['agent'] = violating_agent
+                        # new_constraint['loc'] = constraint[0]['loc'][::-1]
+                        # new_constraint['positive'] = False
+                        # Q['constraints'] = Q['constraints'] + [new_constraint]
                         # calculating new path for violating agent
                         new_path = a_star(self.my_map, self.starts[violating_agent], self.goals[violating_agent], self.heuristics[violating_agent],
                                 violating_agent, self.sizes[violating_agent], Q['constraints'])    

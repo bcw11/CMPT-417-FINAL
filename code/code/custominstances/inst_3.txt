@@ -14,7 +14,7 @@
 
 (min cost: 33)
 standard: 15/22
-disjoint: 31/35
+disjoint: 17/20
 
 symsplit: 36/71
 asymsplit: 36/71

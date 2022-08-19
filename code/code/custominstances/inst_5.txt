@@ -15,7 +15,7 @@
 
 (min cost: 40)
 standard: 3327/5886
-disjoint: 50/58 - 6438/6694 (non optimal solutions)
+disjoint: 1313/1440 (suboptimal: 45)
 
 symsplit: 916/1830
 asymsplit: 1475/2948
