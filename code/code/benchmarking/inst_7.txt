@@ -1,0 +1,21 @@
+8 14
+@ @ @ @ @ @ @ @ @ @ @ @ @ @
+@ . . . . @ . . . . . . . @
+@ . . . . . . . . . . . . @
+@ . . . . @ . . . . . . . @
+@ . . . . . . . . . . . . @
+@ . . . . . . . . . . . . @
+@ . . . . . . . . . . . . @
+@ @ @ @ @ @ @ @ @ @ @ @ @ @
+4
+1 1 1 7 2
+1 3 4 8 1
+6 4 6 8 1
+3 2 4 10 3
+
+(min cost: 39)
+standard: (no solution within 100k nodes)
+disjoint: 117/134 (optimal solution) - 6641/6983 (non optimal solution)
+
+symsplit: 1592/3104
+asymsplit:

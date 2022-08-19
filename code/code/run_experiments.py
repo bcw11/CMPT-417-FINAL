@@ -133,7 +133,7 @@ if __name__ == '__main__':
             solver = IndependentSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
-            result_file = open("prioritized_results.csv", "w", buffering=1)
+            result_file = open("prioritized_results.csv", "a", buffering=1)
             print("***Run Prioritized***")
             solver = PrioritizedPlanningSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
