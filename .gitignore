@@ -2,7 +2,11 @@
 /.idea
 /code/code/results.csv
 /code/code/prioritized_results.csv
-/code/code/mccbs_results.csv
+/code/code/mccbs_asymmetrical_results.csv
+/code/code/mccbs_symmetrical_results.csv
+/code/code/mccbs_disjoint_results.csv
+/code/code/mccbs_standard_results.csv
 /code/code/mccbs_ds_results.csv
+/code/code/mccbs_results.csv
 /code/code/independent_results.csv
 /code/code/cbs_results.csv

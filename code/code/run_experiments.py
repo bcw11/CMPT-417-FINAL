@@ -96,8 +96,8 @@ if __name__ == '__main__':
                         help='The name of the instance file(s)')
     parser.add_argument('--batch', action='store_true', default=False,
                         help='Use batch output instead of animation')
-    parser.add_argument('--disjoint', action='store_true', default=False,
-                        help='Use the disjoint splitting')
+    parser.add_argument('--splitter', type=str, choices=['standard', 'disjoint', 'symmetrical', 'asymmetrical'], default="standard",
+                        help='Choose a splitting strategy: standard (default), disjoint, symmetrical, asymmetrical')
     parser.add_argument('--solver', type=str, default=SOLVER,
                         help='The solver to use (one of: {CBS,Independent,Prioritized}), defaults to ' + str(SOLVER))
 
@@ -113,27 +113,27 @@ if __name__ == '__main__':
         print_mapf_instance(my_map, starts, goals, sizes)
 
         if args.solver == "CBS":
-            # result_file = open("cbs_results.csv", "w", buffering=1)
+            result_file = open("cbs_results.csv", "w", buffering=1)
             print("***Run CBS***")
             cbs = CBSSolver(my_map, starts, goals)
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "MCCBS":
-            # result_file = open("mccbs_results.csv", "w", buffering=1)
-            print("***Run MCCBS***")
+            result_file = open("mccbs_%s_results.csv" % args.splitter, "w", buffering=1)
+            print("***Run MCCBS with %s splitting***" % args.splitter)
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
-            paths = mccbs.find_solution(args.disjoint)
+            paths = mccbs.find_solution(args.splitter)
         elif args.solver == "MCCBS_ds":
-            # result_file = open("mccbs_ds_results.csv", "w", buffering=1)
+            result_file = open("mccbs_ds_results.csv", "w", buffering=1)
             print("***Run MCCBS(ds)***")
             mccbs_ds = MCCBS_dsSolver(my_map, starts, goals, sizes)
             paths = mccbs_ds.find_solution(args.disjoint)
         elif args.solver == "Independent":
-            # result_file = open("independent_results.csv", "w", buffering=1)
+            result_file = open("independent_results.csv", "w", buffering=1)
             print("***Run Independent***")
             solver = IndependentSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
-            # result_file = open("prioritized_results.csv", "a", buffering=1)
+            result_file = open("prioritized_results.csv", "a", buffering=1)
             print("***Run Prioritized***")
             solver = PrioritizedPlanningSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
@@ -142,9 +142,11 @@ if __name__ == '__main__':
 
         cost = get_sum_of_cost(paths)
         if(args.solver == "MCCBS"):
-            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs.num_of_expanded,mccbs.num_of_generated))
+            result_file.write("Instance: {}:\tSum of costs: {} | Expanded/Generated: {}/{} | CPU time (s): {}\n".format(
+                file, cost, mccbs.num_of_expanded, mccbs.num_of_generated, round(mccbs.CPU_time, 2)))
         elif(args.solver == "MCCBS_ds"):
-            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs_ds.num_of_expanded,mccbs_ds.num_of_generated))
+            result_file.write("Instance: {}:\tSum of costs: {} | Expanded/Generated: {}/{} | CPU time (s): {}s\n".format(
+                file, cost, mccbs_ds.num_of_expanded, mccbs_ds.num_of_generated, round(mccbs.CPU_time, 2)))
         else:
             result_file.write("{}:\t{} | \n".format(file, cost))
 
