@@ -96,8 +96,8 @@ if __name__ == '__main__':
                         help='The name of the instance file(s)')
     parser.add_argument('--batch', action='store_true', default=False,
                         help='Use batch output instead of animation')
-    parser.add_argument('--disjoint', action='store_true', default=False,
-                        help='Use the disjoint splitting')
+    parser.add_argument('--splitter', type=str, choices=['standard', 'disjoint', 'symmetrical', 'asymmetrical'], default="standard",
+                        help='Choose a splitting strategy: standard (default), disjoint, symmetrical, asymmetrical')
     parser.add_argument('--solver', type=str, default=SOLVER,
                         help='The solver to use (one of: {CBS,Independent,Prioritized}), defaults to ' + str(SOLVER))
 
@@ -118,10 +118,10 @@ if __name__ == '__main__':
             cbs = CBSSolver(my_map, starts, goals)
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "MCCBS":
-            result_file = open("mccbs_results.csv", "w", buffering=1)
-            print("***Run MCCBS***")
+            result_file = open("mccbs_%s_results.csv" % args.splitter, "w", buffering=1)
+            print("***Run MCCBS with %s splitting***" % args.splitter)
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
-            paths = mccbs.find_solution(args.disjoint)
+            paths = mccbs.find_solution(args.splitter)
         elif args.solver == "MCCBS_ds":
             result_file = open("mccbs_ds_results.csv", "w", buffering=1)
             print("***Run MCCBS(ds)***")
