@@ -130,7 +130,7 @@ if __name__ == '__main__':
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
             print("***Run Prioritized***")
-            solver = PrioritizedPlanningSolver(my_map, starts, goals)
+            solver = PrioritizedPlanningSolver(my_map, starts, goals, sizes)
             paths = solver.find_solution()
         else:
             raise RuntimeError("Unknown solver!")
