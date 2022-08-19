@@ -142,9 +142,11 @@ if __name__ == '__main__':
 
         cost = get_sum_of_cost(paths)
         if(args.solver == "MCCBS"):
-            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs.num_of_expanded,mccbs.num_of_generated))
+            result_file.write("Instance: {}:\tSum of costs: {} | Expanded/Generated: {}/{} | CPU time (s): {}\n".format(
+                file, cost, mccbs.num_of_expanded, mccbs.num_of_generated, round(mccbs.CPU_time, 2)))
         elif(args.solver == "MCCBS_ds"):
-            result_file.write("{}:\t{} | {}/{}\n".format(file, cost,mccbs_ds.num_of_expanded,mccbs_ds.num_of_generated))
+            result_file.write("Instance: {}:\tSum of costs: {} | Expanded/Generated: {}/{} | CPU time (s): {}s\n".format(
+                file, cost, mccbs_ds.num_of_expanded, mccbs_ds.num_of_generated, round(mccbs.CPU_time, 2)))
         else:
             result_file.write("{}:\t{} | \n".format(file, cost))
 
