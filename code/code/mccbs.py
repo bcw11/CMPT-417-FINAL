@@ -193,10 +193,6 @@ class MCCBSSolver(object):
         return node
 
     def find_solution(self, splitter):
-        if splitter == "asymmetrical":
-            print("Using asymmetrical splitting.")
-        else:
-            print("Using symmetrical splitting.")
         self.start_time = timer.time()
         # Generate the root node
         root = {'cost': 0,
