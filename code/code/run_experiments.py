@@ -124,7 +124,10 @@ if __name__ == '__main__':
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
             paths = mccbs.find_solution(args.splitter, args.maxnodes)
             if not paths:
-                print("Couldn't find a solution without generating more than %s nodes." % args.maxnodes)
+                print("After " + str(mccbs.CPU_time) + " seconds, MCCBS with "
+                      + str(args.splitter) + " expanded %s without finding a solution." % args.maxnodes)
+                print("Skipping this instance.")
+                print("")
                 continue
         elif args.solver == "MCCBS_ds":
             result_file = open("mccbs_ds_results.csv", "w", buffering=1)
