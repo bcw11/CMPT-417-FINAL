@@ -249,7 +249,7 @@ class MCCBSSolver(object):
         self.num_of_expanded += 1
         return node
 
-    def find_solution(self, splitter):
+    def find_solution(self, splitter, maxnodes):
         self.start_time = timer.time()
         # Generate the root node
         root = {'cost': 0,
@@ -269,6 +269,9 @@ class MCCBSSolver(object):
         # High-Level Search
         ##############################
         while(len(self.open_list) > 0):
+            if maxnodes != -1:
+                if self.num_of_generated > maxnodes:
+                    return
             # print("\n")
             P = self.pop_node()
             # print("P paths:")

@@ -100,7 +100,8 @@ if __name__ == '__main__':
                         help='Choose a splitting strategy: standard (default), disjoint, symmetrical, asymmetrical')
     parser.add_argument('--solver', type=str, default=SOLVER,
                         help='The solver to use (one of: {CBS,Independent,Prioritized}), defaults to ' + str(SOLVER))
-
+    parser.add_argument('--maxnodes', type=int, default=-1,
+                       help="The maximum number of nodes to expand before abandoning a problem.")
     args = parser.parse_args()
 
 
@@ -121,7 +122,10 @@ if __name__ == '__main__':
             result_file = open("mccbs_%s_results.csv" % args.splitter, "w", buffering=1)
             print("***Run MCCBS with %s splitting***" % args.splitter)
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
-            paths = mccbs.find_solution(args.splitter)
+            paths = mccbs.find_solution(args.splitter, args.maxnodes)
+            if not paths:
+                print("Couldn't find a solution without generating more than %s nodes." % args.maxnodes)
+                continue
         elif args.solver == "MCCBS_ds":
             result_file = open("mccbs_ds_results.csv", "w", buffering=1)
             print("***Run MCCBS(ds)***")
