@@ -148,7 +148,7 @@ if __name__ == '__main__':
             result_file.write("Instance: {}:\tSum of costs: {} | Expanded/Generated: {}/{} | CPU time (s): {}s\n".format(
                 file, cost, mccbs_ds.num_of_expanded, mccbs_ds.num_of_generated, round(mccbs.CPU_time, 2)))
         else:
-            result_file.write("{}:\t{} | \n".format(file, cost))
+            result_file.write("Instance: {}\tSum of costs: {}\n".format(file, cost))
 
 
         if not args.batch:
