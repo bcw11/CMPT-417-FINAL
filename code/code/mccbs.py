@@ -58,6 +58,32 @@ def standard_splitting(self, collision,old_constraints):
         c = {'agent':collision['a2'],'loc':[collision['loc'][1]],'timestep':collision['timestep'],'positive':False}
         if c not in old_constraints:
             constraints.append([c])
+        # a1 = collision['a1']
+        # a2 = collision['a2']
+        # a1_loc = collision['loc'][1]
+        # a2_loc = collision['loc'][2]
+        # a1_size = self.sizes[a1]
+        # a2_size = self.sizes[a2]
+        # loc = collision['loc'][0]
+        # a1coords = get_coords(a1_loc, a1_size)
+        # a2coords = get_coords(a2_loc, a1_size)
+        # t = collision['timestep']
+        # x_bound = loc[0] - a2_size
+        # y_bound = loc[1] - a2_size
+        # for coord in a1coords:
+        #     for x in range(coord[0], x_bound, -1):
+        #         for y in range(coord[1], y_bound, -1):
+        #             constraint = {'agent': a2, 'loc': [(x, y)], 'timestep': t, 'positive': False}
+        #             if constraint not in old_constraints:
+        #                 constraints.append([constraint])
+        # x_bound = loc[0] - a1_size
+        # y_bound = loc[1] - a1_size
+        # for coord in a2coords:
+        #     for x in range(coord[0], x_bound, -1):
+        #         for y in range(coord[1], y_bound, -1):
+        #             constraint = {'agent': a1, 'loc': [(x, y)], 'timestep': t, 'positive': False}
+        #             if constraint not in old_constraints:
+        #                 constraints.append([constraint])
     # edge collision
     else:
         loc1 = collision['loc'][0]
@@ -310,8 +336,31 @@ class MCCBSSolver(object):
                 path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                         agent, self.sizes[agent], Q['constraints'])
                 Q['paths'][agent] = path
+                if (constraint[0]['positive'] == True):
+                    # constraint = constraint[0]
+                    violating_agents = paths_violate_constraint(constraint[0], Q['paths'], self.sizes)
+                    for ai in range(self.num_of_agents):
+                        if (ai != agent):
+                            # creating new negative constraint for violating agent
+                            new_constraint = constraint[0].copy()
+                            new_constraint['agent'] = ai
+                            new_constraint['loc'] = constraint[0]['loc'][::-1]
+                            new_constraint['positive'] = False
+                            Q['constraints'] = Q['constraints'] + [new_constraint]
+                    for violating_agent in violating_agents:
+                        # creating new negative constraint for violating agent
+                        # new_constraint = constraint[0].copy()
+                        # new_constraint['agent'] = violating_agent
+                        # new_constraint['loc'] = constraint[0]['loc'][::-1]
+                        # new_constraint['positive'] = False
+                        # Q['constraints'] = Q['constraints'] + [new_constraint]
+                        # calculating new path for violating agent
+                        new_path = a_star(self.my_map, self.starts[violating_agent], self.goals[violating_agent],
+                                          self.heuristics[violating_agent],
+                                          violating_agent, self.sizes[violating_agent], Q['constraints'])
+                        Q['paths'][violating_agent] = new_path
+                # push child node if all paths exist
 
-                # push child node if all paths exist 
                 if(not None in Q['paths']):
                     Q['collisions'] = detect_collisions(Q['paths'],self.sizes)
                     Q['cost'] = get_sum_of_cost(Q['paths'])
