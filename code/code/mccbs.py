@@ -297,6 +297,7 @@ class MCCBSSolver(object):
         while(len(self.open_list) > 0):
             if maxnodes != -1:
                 if self.num_of_generated > maxnodes:
+                    self.CPU_time = timer.time() - self.start_time
                     return
             # print("\n")
             P = self.pop_node()
