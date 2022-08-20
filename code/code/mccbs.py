@@ -48,6 +48,63 @@ def print_constraint_set(constraints):
         print("a:",constraint['agent'],"loc:",constraint['loc'],"t:",constraint['timestep'])
 
 
+def standard_splitting(self, collision,old_constraints):
+    constraints = []
+    # vertex collision
+    if(len(collision['loc']) == 3):
+        c = {'agent':collision['a1'],'loc':[collision['loc'][1]],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        c = {'agent':collision['a2'],'loc':[collision['loc'][1]],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+    # edge collision
+    else:
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        c = {'agent':collision['a1'],'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        c = {'agent':collision['a2'],'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+    return constraints
+
+
+# splits collision into one random and one positive constraint
+def disjoint_splitting(self, collision, old_constraints):
+    constraints = []
+    i = random.randint(0,1)
+    agent = list(collision.values())[i]
+    # vertex collision
+    if(len(collision['loc']) == 3):
+        c = {'agent':agent,'loc':[collision['loc'][i+1]],'timestep':collision['timestep'],'positive':False}
+        if c not in old_constraints:
+            constraints.append([c])
+        c = {'agent':agent,'loc':[collision['loc'][i+1]],'timestep':collision['timestep'],'positive':True}
+        if c not in old_constraints:
+            constraints.append([c])
+    # edge collision
+    else:
+        loc1 = collision['loc'][0]
+        loc2 = collision['loc'][1]
+        if(agent == collision['a1']):
+            c = {'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':False}
+            if c not in old_constraints:
+                constraints.append([c])
+            c = {'agent':agent,'loc':[loc1,loc2],'timestep':collision['timestep'],'positive':True}
+            if c not in old_constraints:
+                constraints.append([c])
+        else:
+            c = {'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':False}
+            if c not in old_constraints:
+                constraints.append([c])
+            c = {'agent':agent,'loc':[loc2,loc1],'timestep':collision['timestep'],'positive':True}
+            if c not in old_constraints:
+                constraints.append([c])
+    return constraints
+
+
 def asym_splitting(self,collision,old_constraints):
     if(len(collision['loc']) == 3):
         a1 = collision['a1']
@@ -230,11 +287,9 @@ class MCCBSSolver(object):
             elif splitter == "symmetrical":
                 constraints = sym_splitting(self,collision, P['constraints'])
             elif splitter == "disjoint":
-                # constraints = disjoint splitting
-                constraints = sym_splitting(self, collision, P['constraints'])
+                constraints = disjoint_splitting(self, collision, P['constraints'])
             else:
-                # constraints = standard splitting
-                constraints = sym_splitting(self,collision, P['constraints'])
+                constraints = standard_splitting(self,collision, P['constraints'])
 
             for constraint in constraints:
                 if(constraint == []):
