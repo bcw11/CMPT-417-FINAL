@@ -79,8 +79,14 @@ class PrioritizedPlanningSolver(object):
                                         coordinates = tuple([max(0, location[0] - x), max(0, location[1] - y)])
                                         # print(coordinates)
                                         constraint = {'agent': agent, 'loc': [coordinates], 'timestep': t, 'positive': False}
+                                        constraints.append(constraint)
+                                        if t == len(path) - 1:
+                                            constraint = {'agent': agent, 'loc': [coordinates], 'timestep': -1,
+                                                                 'positive': False}
                                         #print("Adding the following constraint: " + str(constraint))
                                         constraints.append(constraint)
+
+
 
             # recalculating paths based on generated constraints
             # print("Invoking a_star with the following constraints:" + str(constraints))
