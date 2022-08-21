@@ -119,7 +119,7 @@ if __name__ == '__main__':
             cbs = CBSSolver(my_map, starts, goals)
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "MCCBS":
-            result_file = open("mccbs_%s_results.csv" % args.splitter, "w", buffering=1)
+            result_file = open("mccbs_%s_results.csv" % args.splitter, "a", buffering=1)
             print("***Run MCCBS with %s splitting***" % args.splitter)
             mccbs = MCCBSSolver(my_map, starts, goals, sizes)
             paths = mccbs.find_solution(args.splitter, args.maxnodes)
