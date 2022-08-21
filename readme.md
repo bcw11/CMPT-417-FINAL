@@ -18,7 +18,7 @@ With a number of arguments.
 `--solver <solver_name> (Options: MCCBS, Prioritized)` Specify which solver to use.
 
 **Optional Arguments:**\
-`--batch` Run the solver against a batch of instances.\
+`--batch` Run the solver against a batch of instances. Incompatible with Prioritized Planning.\
 `--splitter <splitter_name> (Options: standard, disjoint, symmetrical, asymmetrical)` Choose the splitting strategy to use. Defaults to `standard` if omitted.\
 `--maxnodes <max_number_of_generated_nodes>` Choose a number of generated nodes at which to stop the solver. If omitted, will run until a solution is found or the computer runs out of memory.
 
@@ -33,3 +33,7 @@ For example, to invoke the MCCBS solver with symmetrical splitting on the set of
 `python run_experiments.py --instance "benchmarking/inst_*" --solver MCCBS --splitter symmetrical --batch --maxnodes 500000`
 
 The results of the solver are found in `/code/code/mccbs_<splitter_name>_results.csv`.
+
+An example of the results of previous runs with various solvers can be found inside `data/`.
+
+Thanks for reading!
