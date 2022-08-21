@@ -58,32 +58,6 @@ def standard_splitting(self, collision,old_constraints):
         c = {'agent':collision['a2'],'loc':[collision['loc'][1]],'timestep':collision['timestep'],'positive':False}
         if c not in old_constraints:
             constraints.append([c])
-        # a1 = collision['a1']
-        # a2 = collision['a2']
-        # a1_loc = collision['loc'][1]
-        # a2_loc = collision['loc'][2]
-        # a1_size = self.sizes[a1]
-        # a2_size = self.sizes[a2]
-        # loc = collision['loc'][0]
-        # a1coords = get_coords(a1_loc, a1_size)
-        # a2coords = get_coords(a2_loc, a1_size)
-        # t = collision['timestep']
-        # x_bound = loc[0] - a2_size
-        # y_bound = loc[1] - a2_size
-        # for coord in a1coords:
-        #     for x in range(coord[0], x_bound, -1):
-        #         for y in range(coord[1], y_bound, -1):
-        #             constraint = {'agent': a2, 'loc': [(x, y)], 'timestep': t, 'positive': False}
-        #             if constraint not in old_constraints:
-        #                 constraints.append([constraint])
-        # x_bound = loc[0] - a1_size
-        # y_bound = loc[1] - a1_size
-        # for coord in a2coords:
-        #     for x in range(coord[0], x_bound, -1):
-        #         for y in range(coord[1], y_bound, -1):
-        #             constraint = {'agent': a1, 'loc': [(x, y)], 'timestep': t, 'positive': False}
-        #             if constraint not in old_constraints:
-        #                 constraints.append([constraint])
     # edge collision
     else:
         loc1 = collision['loc'][0]
