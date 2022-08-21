@@ -10,7 +10,7 @@ from prioritized import PrioritizedPlanningSolver
 from visualize import Animation
 from single_agent_planner import get_sum_of_cost
 
-SOLVER = "CBS"
+SOLVER = "Prioritized"
 
 def print_mapf_instance(my_map, starts, goals, sizes):
     print('Start locations')
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--splitter', type=str, choices=['standard', 'disjoint', 'symmetrical', 'asymmetrical'], default="standard",
                         help='Choose a splitting strategy: standard (default), disjoint, symmetrical, asymmetrical')
     parser.add_argument('--solver', type=str, default=SOLVER,
-                        help='The solver to use (one of: {CBS,Independent,Prioritized}), defaults to ' + str(SOLVER))
+                        help='The solver to use (one of: {MCCBS, Prioritized}), defaults to ' + str(SOLVER))
     parser.add_argument('--maxnodes', type=int, default=-1,
                        help="The maximum number of nodes to expand before abandoning a problem.")
     args = parser.parse_args()
